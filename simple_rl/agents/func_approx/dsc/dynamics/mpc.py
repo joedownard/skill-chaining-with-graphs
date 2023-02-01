@@ -161,7 +161,8 @@ class MPC:
             for j in range(num_steps):
                 actions = torch_actions[:, j, :]
 
-                print(actions.shape, torch_states.shape)
+                if (j == 1):
+                    print(actions.shape, torch_states.shape)
 
                 prediction = self.model.predict_next_state(torch_states.float(), actions.float())
                 torch_states = prediction
