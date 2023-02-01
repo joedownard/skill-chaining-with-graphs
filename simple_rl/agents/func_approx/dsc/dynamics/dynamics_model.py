@@ -19,9 +19,9 @@ class DynamicsModel(nn.Module):
         )
     
     def forward(self, state, action):
-        print(state)
-        print(self.mean_x)
-        print(self.std_x)
+        # print(state)
+        # print(self.mean_x)
+        # print(self.std_x)
         state = (state - self.mean_x) / self.std_x
         action = (action - self.mean_y) / self.std_y
         cat = torch.cat([state, action], dim=1)
