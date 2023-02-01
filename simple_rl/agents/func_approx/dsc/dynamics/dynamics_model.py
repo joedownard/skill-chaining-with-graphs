@@ -28,6 +28,8 @@ class DynamicsModel(nn.Module):
         return self.model(cat)
     
     def predict_next_state(self, state, action):
+        state = state.to(self.device).float()
+        state = action.to(self.device).float()
         pred = self.forward(state, action)
         return (pred * self.std_z) + self.mean_z + state
     
