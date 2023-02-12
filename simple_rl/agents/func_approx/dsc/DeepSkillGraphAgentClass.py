@@ -420,7 +420,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment_name", type=str, help="Experiment Name")
     parser.add_argument("--device", type=str, help="cpu/cuda:0/cuda:1")
-    parser.add_argument("--env", type=str, help="name of gym environment", default="Pendulum-v0")
     parser.add_argument("--seed", type=int, help="Random seed for this run (default=0)", default=0)
     parser.add_argument("--episodes", type=int, help="# episodes", default=200)
     parser.add_argument("--steps", type=int, help="# steps", default=1000)
@@ -437,54 +436,10 @@ if __name__ == "__main__":
     parser.add_argument("--multithread_mpc", action="store_true", default=False)
     args = parser.parse_args()
 
-    if args.env == "point-reacher":
-        from simple_rl.tasks.point_reacher.PointReacherMDPClass import PointReacherMDP
-
-        overall_mdp = PointReacherMDP(seed=args.seed,
-                                      dense_reward=args.dense_reward,
-                                      render=args.render,
-                                      use_hard_coded_events=args.use_hard_coded_events)
-        state_dim = 6
-        action_dim = 2
-    elif args.env == "ant-reacher":
-        from simple_rl.tasks.ant_reacher.AntReacherMDPClass import AntReacherMDP
-        overall_mdp = AntReacherMDP(seed=args.seed,
-                                    render=args.render)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    elif args.env == "d4rl-ant-maze":
-        from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-        overall_mdp = D4RLAntMazeMDP(maze_size="umaze", seed=args.seed, render=args.render)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    elif args.env == "d4rl-medium-ant-maze":
-        from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-        overall_mdp = D4RLAntMazeMDP(maze_size="medium", seed=args.seed, render=args.render)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    elif args.env == "d4rl-hard-ant-maze":
-        from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-        overall_mdp = D4RLAntMazeMDP(maze_size="large", seed=args.seed, render=args.render)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    elif args.env == "d4rl-medium-point-maze":
-        from simple_rl.tasks.d4rl_point_maze.D4RLPointMazeMDPClass import D4RLPointMazeMDP
-        overall_mdp = D4RLPointMazeMDP(seed=args.seed,
-                                       render=args.render,
-                                       difficulty="medium",
-                                       goal_directed=False)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    elif args.env == "d4rl-hard-point-maze":
-        from simple_rl.tasks.d4rl_point_maze.D4RLPointMazeMDPClass import D4RLPointMazeMDP
-        overall_mdp = D4RLPointMazeMDP(seed=args.seed,
-                                       render=args.render,
-                                       difficulty="hard",
-                                       goal_directed=False)
-        state_dim = overall_mdp.state_space_size()
-        action_dim = overall_mdp.action_space_size()
-    else:
-        raise NotImplementedError(args.env)
+    from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
+    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render)
+    state_dim = overall_mdp.state_space_size()
+    action_dim = overall_mdp.action_space_size()
 
     # Create folders for saving various things
     logdir = create_log_dir(args.experiment_name)

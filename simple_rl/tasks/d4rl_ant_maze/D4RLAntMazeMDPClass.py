@@ -10,8 +10,12 @@ from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeStateClass import D4RLAntMazeState
 
 class D4RLAntMazeMDP(GoalDirectedMDP):
     def __init__(self, maze_size, goal_state=None, use_hard_coded_events=False, seed=0, render=False):
-        assert maze_size in ("umaze", "medium", "large"), maze_size
-        self.env_name = 'antmaze-umaze-v0' if maze_size == "umaze" else f"antmaze-{maze_size}-play-v0"
+        assert maze_size in ("original", "middle_only", "middle_right"), maze_size
+        self.env_name = 'antmaze-dynamic-leftmiddle-walls'
+        if maze_size == "middle_only":
+            self.env_name = 'antmaze-dynamic-middle-wall'
+        if maze_size == "middle_right":
+            self.env_name = 'antmaze-dynamic-rightmiddle-walls'
         self.use_hard_coded_events = use_hard_coded_events
         self.env = gym.make(self.env_name)
         self.reset()
