@@ -527,7 +527,7 @@ if __name__ == "__main__":
         event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
         end_salient_event = SalientEvent(end, event_idx)
         successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
-        success_num += len(successes)
-        total_runs += 50
+        success_num += sum([(1 if succ else 0) for succ in successes])
+        total_runs += len(successes)
 
     print("Success Rate: ", success_num / total_runs)
