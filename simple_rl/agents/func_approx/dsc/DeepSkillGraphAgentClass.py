@@ -517,3 +517,16 @@ if __name__ == "__main__":
                                     seed=args.seed,
                                     plot_gc_value_functions=args.plot_gc_value_functions)
     num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
+
+    num_start_end_tests = 20
+    start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
+    success_num = 0
+    total_runs = 0
+
+    for (start, end) in start_end_states:
+        end_salient_event = SalientEvent(target_state, event_idx)
+        successes, final_states = dsg_agent.dsg_test_loop(episodes=50, end_salient_event, start)
+        success_num += len(successes)
+        total_runs += 50
+
+    print("Success Rate: ", success_num / total_runs)
