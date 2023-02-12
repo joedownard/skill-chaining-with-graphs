@@ -519,7 +519,7 @@ if __name__ == "__main__":
     num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
 
     num_start_end_tests = 20
-    start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
+    start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
     success_num = 0
     total_runs = 0
 
