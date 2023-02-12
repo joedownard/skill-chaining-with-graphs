@@ -525,7 +525,7 @@ if __name__ == "__main__":
 
     for (start, end) in start_end_states:
         end_salient_event = SalientEvent(target_state, event_idx)
-        successes, final_states = dsg_agent.dsg_test_loop(episodes=50, end_salient_event, start)
+        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
         success_num += len(successes)
         total_runs += 50
 
