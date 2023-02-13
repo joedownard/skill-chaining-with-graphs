@@ -99,7 +99,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         return [self.init_state.position]
 
     def reset(self, episode=None):
-        if switch_after is not None and episode is not None and episode > self.switch_after:
+        if self.switch_after is not None and episode is not None and episode > self.switch_after:
             self.env_name = self.switch_to
             self.env = self.secondary_env
         init_state_array = self.env.reset()
