@@ -437,7 +437,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render, switch_after=50, switch_to="middle_only")
+    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render, switch_after=500, switch_to="middle_only")
     state_dim = overall_mdp.state_space_size()
     action_dim = overall_mdp.action_space_size()
 
@@ -471,9 +471,9 @@ if __name__ == "__main__":
                                     experiment_name=args.experiment_name,
                                     seed=args.seed,
                                     plot_gc_value_functions=args.plot_gc_value_functions)
-    num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
+    num_successes = dsg_agent.dsg_run_loop(episodes=501, num_steps=args.steps)
 
-    num_start_end_tests = 10
+    num_start_end_tests = 20
     start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
     success_num = 0
     total_runs = 0
@@ -481,8 +481,25 @@ if __name__ == "__main__":
     for (start, end) in start_end_states:
         event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
         end_salient_event = SalientEvent(end, event_idx)
-        successes, final_states = dsg_agent.dsg_test_loop(5, end_salient_event, start)
+        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
         success_num += sum([(1 if succ else 0) for succ in successes])
         total_runs += len(successes)
+    success_rate_1 = success_num / total_runs
 
-    print("Success Rate: ", success_num / total_runs)
+    num_successes = dsg_agent.dsg_run_loop(episodes=499, num_steps=args.steps, starting_episode=501)
+
+    num_start_end_tests = 20
+    start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
+    success_num = 0
+    total_runs = 0
+
+    for (start, end) in start_end_states:
+        event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
+        end_salient_event = SalientEvent(end, event_idx)
+        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
+        success_num += sum([(1 if succ else 0) for succ in successes])
+        total_runs += len(successes)
+    success_rate_2 = success_num / total_runs
+
+    print("Success Rate 1: ", success_rate_1)
+    print("Success Rate 2: ", success_rate_1)
