@@ -9,16 +9,29 @@ from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeStateClass import D4RLAntMazeState
 
 
 class D4RLAntMazeMDP(GoalDirectedMDP):
-    def __init__(self, maze_size, goal_state=None, use_hard_coded_events=False, seed=0, render=False):
+    def __init__(self, maze_size, goal_state=None, use_hard_coded_events=False, seed=0, render=False, switch_to=None, switch_after=None):
+        assert (switch_after is None if switch_to is None else True)
+        assert (switch_to is None if switch_after is None else True)
+
         assert maze_size in ("original", "middle_only", "middle_right"), maze_size
-        self.env_name = 'antmaze-dynamic-leftmiddle-walls'
-        if maze_size == "middle_only":
-            self.env_name = 'antmaze-dynamic-middle-wall'
-        if maze_size == "middle_right":
-            self.env_name = 'antmaze-dynamic-rightmiddle-walls'
+        def get_env_name(maze_size):
+            name = 'antmaze-dynamic-leftmiddle-walls'
+            if maze_size == "middle_only":
+                name = 'antmaze-dynamic-middle-wall'
+            if maze_size == "middle_right":
+                name = 'antmaze-dynamic-rightmiddle-walls'
+
+        self.env_name = get_env_name(maze_size)
+
         self.use_hard_coded_events = use_hard_coded_events
         self.env = gym.make(self.env_name)
         self.reset()
+
+        if switch_to is not None:
+            self.switch_to = get_env_name(switch_to)
+            self.secondary_env = gym.make(self.switch_to)
+            self.secondary_env.seed(seed)
+            self.switch_after = switch_after
 
         self.render = render
         self.seed = seed
@@ -85,7 +98,10 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def get_init_positions(self):
         return [self.init_state.position]
 
-    def reset(self):
+    def reset(self, episode):
+        if switch_after is not None and episode > self.switch_after:
+            self.env_name = self.switch_to
+            self.env = self.secondary_env
         init_state_array = self.env.reset()
         self.init_state = self._get_state(init_state_array, done=False)
         super(D4RLAntMazeMDP, self).reset()

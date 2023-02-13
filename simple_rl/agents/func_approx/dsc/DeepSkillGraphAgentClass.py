@@ -406,14 +406,14 @@ class DeepSkillGraphAgent(object):
 
         print("*" * 80)
         if start_state is None:
-            self.mdp.reset()
+            self.mdp.reset(episode)
             print(f"[DeepSkillGraphAgentClass] Episode {episode}: Resetting MDP to start state")
         else:
             start_position = start_state.position if isinstance(start_state, State) else start_state[:2]
             print(f"[DeepSkillGraphAgentClass] Episode {episode}: Resetting MDP to manual state {start_position}")
-            self.mdp.reset()
+            self.mdp.reset(episode)
             self.mdp.set_xy(start_position)
-        print("*" * 80)
+        print("*" * 80, flush=True)
 
 
 if __name__ == "__main__":
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render)
+    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render, switch_after=50, switch_to="middle_only")
     state_dim = overall_mdp.state_space_size()
     action_dim = overall_mdp.action_space_size()
 
@@ -473,7 +473,7 @@ if __name__ == "__main__":
                                     plot_gc_value_functions=args.plot_gc_value_functions)
     num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
 
-    num_start_end_tests = 20
+    num_start_end_tests = 10
     start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
     success_num = 0
     total_runs = 0
@@ -481,7 +481,7 @@ if __name__ == "__main__":
     for (start, end) in start_end_states:
         event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
         end_salient_event = SalientEvent(end, event_idx)
-        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
+        successes, final_states = dsg_agent.dsg_test_loop(5, end_salient_event, start)
         success_num += sum([(1 if succ else 0) for succ in successes])
         total_runs += len(successes)
 
