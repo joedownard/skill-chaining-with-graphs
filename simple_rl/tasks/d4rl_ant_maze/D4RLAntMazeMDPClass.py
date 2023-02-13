@@ -23,15 +23,16 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
 
         self.env_name = get_env_name(maze_size)
 
+        if switch_to is not None:
+            self.switch_to = get_env_name(switch_to)
+            self.switch_after = switch_after
+            self.secondary_env = gym.make(self.switch_to)
+            self.secondary_env.seed(seed)
+            self.secondary_env.reset()
+
         self.use_hard_coded_events = use_hard_coded_events
         self.env = gym.make(self.env_name)
         self.reset()
-
-        if switch_to is not None:
-            self.switch_to = get_env_name(switch_to)
-            self.secondary_env = gym.make(self.switch_to)
-            self.secondary_env.seed(seed)
-            self.switch_after = switch_after
 
         self.render = render
         self.seed = seed
