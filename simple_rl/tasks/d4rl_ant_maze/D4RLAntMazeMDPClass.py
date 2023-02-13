@@ -14,12 +14,12 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         assert (switch_to is None if switch_after is None else True)
 
         assert maze_size in ("original", "middle_only", "middle_right"), maze_size
-        def get_env_name(maze_size):
-            name = 'antmaze-dynamic-leftmiddle-walls'
-            if maze_size == "middle_only":
-                name = 'antmaze-dynamic-middle-wall'
-            if maze_size == "middle_right":
-                name = 'antmaze-dynamic-rightmiddle-walls'
+        def get_env_name(size):
+            if size == "middle_only":
+                return 'antmaze-dynamic-middle-wall'
+            if size == "middle_right":
+                return 'antmaze-dynamic-rightmiddle-walls'
+            return 'antmaze-dynamic-leftmiddle-walls'
 
         self.env_name = get_env_name(maze_size)
 
