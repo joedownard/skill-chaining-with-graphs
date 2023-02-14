@@ -502,4 +502,4 @@ if __name__ == "__main__":
     success_rate_2 = success_num / total_runs
 
     print("Success Rate 1: ", success_rate_1)
-    print("Success Rate 2: ", success_rate_1)
+    print("Success Rate 2: ", success_rate_2)
