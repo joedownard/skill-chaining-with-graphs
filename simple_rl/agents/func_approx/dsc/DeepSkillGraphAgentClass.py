@@ -415,6 +415,19 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
+    def run_test(self, pairs=20, trials=50):
+        num_start_end_tests = pairs
+        start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
+        success_num = 0
+        total_runs = 0
+
+        for (start, end) in start_end_states:
+            event_idx = len(self.mdp.all_salient_events_ever) + 1
+            end_salient_event = SalientEvent(end, event_idx)
+            successes, final_states = self.dsg_test_loop(trials, end_salient_event, start)
+            success_num += sum([(1 if succ else 0) for succ in successes])
+            total_runs += len(successes)
+        return success_num / total_runs
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -434,10 +447,16 @@ if __name__ == "__main__":
     parser.add_argument("--use_model", action="store_true", default=False)
     parser.add_argument("--use_vf", action="store_true", default=False)
     parser.add_argument("--multithread_mpc", action="store_true", default=False)
+    parser.add_argument("--initial_env", type=str, default="antmaze-dynamic-leftmiddle-walls")
+    parser.add_argument("--enable_switch_env", action="store_true", default=False)
+    parser.add_argument("--switch_to_env", type=str, default="antmaze-dynamic-middle-wall")
+    parser.add_argument("--switch_after", type=int, default=500)
     args = parser.parse_args()
 
+    assert args.episodes > args.switch_after, "Switch after greater or equal to episodes"
+
     from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
-    overall_mdp = D4RLAntMazeMDP(maze_size="original", seed=args.seed, render=args.render, switch_after=500, switch_to="middle_only")
+    overall_mdp = D4RLAntMazeMDP(maze_env=args.initial_env, seed=args.seed, render=args.render)
     state_dim = overall_mdp.state_space_size()
     action_dim = overall_mdp.action_space_size()
 
@@ -471,35 +490,24 @@ if __name__ == "__main__":
                                     experiment_name=args.experiment_name,
                                     seed=args.seed,
                                     plot_gc_value_functions=args.plot_gc_value_functions)
-    num_successes = dsg_agent.dsg_run_loop(episodes=501, num_steps=args.steps)
 
-    num_start_end_tests = 20
-    start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
-    success_num = 0
-    total_runs = 0
+    if not args.enable_switch_env:
+        num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
+        print("Success Rate: ", dsg_agent.run_test())
+        return
 
-    for (start, end) in start_end_states:
-        event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
-        end_salient_event = SalientEvent(end, event_idx)
-        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
-        success_num += sum([(1 if succ else 0) for succ in successes])
-        total_runs += len(successes)
-    success_rate_1 = success_num / total_runs
+    eps_first_batch = args.switch_after
+    eps_second_batch = args.episodes - args.switch_after
 
-    num_successes = dsg_agent.dsg_run_loop(episodes=499, num_steps=args.steps, starting_episode=501)
+    num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
+    success_pre_env_switch = dsg_agent.run_test()
 
-    num_start_end_tests = 20
-    start_end_states = [(dsg_agent.mdp.sample_random_state()[:2], dsg_agent.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
-    success_num = 0
-    total_runs = 0
+    dsg_agent.mdp.switch_environment(args.switch_to_env)
+    success_post_env_switch = dsg_agent.run_test()
 
-    for (start, end) in start_end_states:
-        event_idx = len(dsg_agent.mdp.all_salient_events_ever) + 1
-        end_salient_event = SalientEvent(end, event_idx)
-        successes, final_states = dsg_agent.dsg_test_loop(50, end_salient_event, start)
-        success_num += sum([(1 if succ else 0) for succ in successes])
-        total_runs += len(successes)
-    success_rate_2 = success_num / total_runs
+    num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
+    success_post_new_env_training = dsg_agent.run_test()
 
-    print("Success Rate 1: ", success_rate_1)
-    print("Success Rate 2: ", success_rate_2)
+    print("Success Rate on initial env post training: ", success_pre_env_switch)
+    print("Success Rate on new env post switch: ", success_post_env_switch)
+    print("Success Rate on new env post further training: ", success_post_new_env_training)
