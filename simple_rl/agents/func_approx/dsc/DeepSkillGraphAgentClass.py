@@ -495,20 +495,19 @@ if __name__ == "__main__":
     if not args.enable_switch_env:
         num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
         print("Success Rate: ", dsg_agent.run_test())
-        return
+    else:
+        eps_first_batch = args.switch_after
+        eps_second_batch = args.episodes - args.switch_after
 
-    eps_first_batch = args.switch_after
-    eps_second_batch = args.episodes - args.switch_after
+        num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
+        success_pre_env_switch = dsg_agent.run_test()
 
-    num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
-    success_pre_env_switch = dsg_agent.run_test()
+        dsg_agent.mdp.switch_environment(args.switch_to_env)
+        success_post_env_switch = dsg_agent.run_test()
 
-    dsg_agent.mdp.switch_environment(args.switch_to_env)
-    success_post_env_switch = dsg_agent.run_test()
+        num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
+        success_post_new_env_training = dsg_agent.run_test()
 
-    num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
-    success_post_new_env_training = dsg_agent.run_test()
-
-    print("Success Rate on initial env post training: ", success_pre_env_switch)
-    print("Success Rate on new env post switch: ", success_post_env_switch)
-    print("Success Rate on new env post further training: ", success_post_new_env_training)
+        print("Success Rate on initial env post training: ", success_pre_env_switch)
+        print("Success Rate on new env post switch: ", success_post_env_switch)
+        print("Success Rate on new env post further training: ", success_post_new_env_training)
