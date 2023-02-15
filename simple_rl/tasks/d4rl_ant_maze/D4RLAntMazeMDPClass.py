@@ -10,10 +10,7 @@ from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeStateClass import D4RLAntMazeState
 
 class D4RLAntMazeMDP(GoalDirectedMDP):
     def __init__(self, maze_env, goal_state=None, use_hard_coded_events=False, seed=0, render=False):
-        assert (switch_after is None if switch_to is None else True)
-        assert (switch_to is None if switch_after is None else True)
-
-        assert maze_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), maze_size
+        assert maze_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), maze_env
 
         self.env_name = maze_env
 
@@ -87,6 +84,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         return [self.init_state.position]
 
     def switch_environment(self, new_env):
+        assert new_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), new_env
         self.env = gym.make(new_env)
         self.env_name = new_env
         self.env.seed(self.seed)
