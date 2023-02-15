@@ -453,7 +453,8 @@ if __name__ == "__main__":
     parser.add_argument("--switch_after", type=int, default=500)
     args = parser.parse_args()
 
-    assert args.episodes > args.switch_after, "Switch after greater or equal to episodes"
+    if args.enable_switch_env:
+        assert args.episodes > args.switch_after, "Switch after greater or equal to episodes"
 
     from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
     overall_mdp = D4RLAntMazeMDP(maze_env=args.initial_env, seed=args.seed, render=args.render)
