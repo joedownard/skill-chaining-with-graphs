@@ -16,6 +16,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
 
         self.use_hard_coded_events = use_hard_coded_events
         self.env = gym.make(self.env_name)
+        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: x % 2 == 0)
         self.reset()
 
         self.render = render
@@ -86,6 +87,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def switch_environment(self, new_env):
         assert new_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), new_env
         self.env = gym.make(new_env)
+        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: x % 2 == 0)
         self.env_name = new_env
         self.env.seed(self.seed)
         self.env.reset()
