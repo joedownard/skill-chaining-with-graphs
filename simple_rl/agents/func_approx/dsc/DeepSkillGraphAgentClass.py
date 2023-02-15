@@ -415,7 +415,7 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
-    def run_test(self, pairs=20, trials=50):
+    def run_test(self, pairs=15, trials=20):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
@@ -447,9 +447,9 @@ if __name__ == "__main__":
     parser.add_argument("--use_model", action="store_true", default=False)
     parser.add_argument("--use_vf", action="store_true", default=False)
     parser.add_argument("--multithread_mpc", action="store_true", default=False)
-    parser.add_argument("--initial_env", type=str, default="antmaze-dynamic-leftmiddle-walls")
+    parser.add_argument("--initial_env", type=str, default="antmaze-dynamic-middle-wall")
     parser.add_argument("--enable_switch_env", action="store_true", default=False)
-    parser.add_argument("--switch_to_env", type=str, default="antmaze-dynamic-middle-wall")
+    parser.add_argument("--switch_to_env", type=str, default="antmaze-dynamic-rightmiddle-walls")
     parser.add_argument("--switch_after", type=int, default=500)
     args = parser.parse_args()
 
@@ -459,6 +459,7 @@ if __name__ == "__main__":
     overall_mdp = D4RLAntMazeMDP(maze_env=args.initial_env, seed=args.seed, render=args.render)
     state_dim = overall_mdp.state_space_size()
     action_dim = overall_mdp.action_space_size()
+
 
     # Create folders for saving various things
     logdir = create_log_dir(args.experiment_name)
