@@ -415,7 +415,7 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
-    def run_test(self, pairs=15, trials=20):
+    def run_test(self, pairs=50, trials=20):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0

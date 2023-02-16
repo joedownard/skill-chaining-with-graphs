@@ -585,8 +585,8 @@ class SkillGraphPlanner(object):
         if chain.should_complete_chain(newly_created_option):
             chain.set_chain_completed()
 
-        if chain.is_chain_completed():
-            visualize_graph(self, episode, self.chainer.experiment_name, self.chainer.seed, True)
+        # if chain.is_chain_completed():
+        #     visualize_graph(self, episode, self.chainer.experiment_name, self.chainer.seed, True)
 
     # -----------------------------–––––––--------------
     # Utility Functions
