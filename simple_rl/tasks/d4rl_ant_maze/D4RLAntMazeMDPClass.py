@@ -15,8 +15,10 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         self.env_name = maze_env
 
         self.use_hard_coded_events = use_hard_coded_events
+        self.record_next_ep = True
+
         self.env = gym.make(self.env_name)
-        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: x % 50 == 0)
+        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next())
         self.reset()
 
         self.render = render
@@ -44,6 +46,12 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
                                  self._reward_func, self.init_state,
                                  salient_positions, task_agnostic=goal_state is None,
                                  goal_state=goal_state, goal_tolerance=0.6)
+
+    def _consume_record_next(self):
+        if self.record_next_ep:
+            self.record_next_ep = False
+            return True
+        return False
 
     def _reward_func(self, state, action):
         next_state, _, done, info = self.env.step(action)
@@ -87,7 +95,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def switch_environment(self, new_env):
         assert new_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), new_env
         self.env = gym.make(new_env)
-        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: x % 50 == 0)
+        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next())
         self.env_name = new_env
         self.env.seed(self.seed)
         self.env.reset()
