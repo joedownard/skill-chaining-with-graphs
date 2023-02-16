@@ -15,7 +15,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         self.env_name = maze_env
 
         self.use_hard_coded_events = use_hard_coded_events
-        self.record_next_ep = True
+        self.record_next = True
 
         self.env = gym.make(self.env_name)
         self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next())
@@ -48,13 +48,13 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
                                  goal_state=goal_state, goal_tolerance=0.6)
 
     def _consume_record_next(self):
-        if self.record_next_ep:
-            self.record_next_ep = False
+        if self.record_next:
+            self.record_next = False
             return True
         return False
 
     def record_next_ep(self):
-        self.record_next_ep = True
+        self.record_next = True
 
     def _reward_func(self, state, action):
         next_state, _, done, info = self.env.step(action)
