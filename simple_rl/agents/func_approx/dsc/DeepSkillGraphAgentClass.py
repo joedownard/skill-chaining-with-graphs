@@ -422,6 +422,7 @@ class DeepSkillGraphAgent(object):
         total_runs = 0
 
         for (start, end) in start_end_states:
+            self.mdp.record_next_ep()
             event_idx = len(self.mdp.all_salient_events_ever) + 1
             end_salient_event = SalientEvent(end, event_idx)
             successes, final_states = self.dsg_test_loop(trials, end_salient_event, start)

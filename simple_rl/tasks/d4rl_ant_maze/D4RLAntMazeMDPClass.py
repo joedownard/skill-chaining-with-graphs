@@ -53,6 +53,9 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
             return True
         return False
 
+    def record_next_ep(self):
+        self.record_next_ep = True
+
     def _reward_func(self, state, action):
         next_state, _, done, info = self.env.step(action)
 
