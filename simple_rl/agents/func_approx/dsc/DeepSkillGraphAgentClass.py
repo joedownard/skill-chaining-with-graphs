@@ -2,6 +2,7 @@ import ipdb
 import argparse
 import random
 import networkx as nx
+import wandb
 from copy import deepcopy
 from collections import defaultdict
 import networkx.algorithms.shortest_paths as shortest_paths
@@ -226,6 +227,9 @@ class DeepSkillGraphAgent(object):
                                                                goal_salient_event=test_event,
                                                                episode=episode,
                                                                step=0)
+
+            wandb.log({"test_length": step_number})
+
             success = test_event(state)
             successes.append(success)
             final_states.append(deepcopy(state))
@@ -403,7 +407,7 @@ class DeepSkillGraphAgent(object):
     # -----------------------------–––––––--------------
     def reset(self, episode, start_state=None):
         """ Reset the MDP to either the default start state or to the specified one. """
-
+        wandb.log({"episode": episode})
         print("*" * 80)
         if start_state is None:
             self.mdp.reset(episode)
@@ -415,7 +419,7 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
-    def run_test(self, pairs=20, trials=10):
+    def run_test(self, pairs=100, trials=5):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
@@ -426,8 +430,12 @@ class DeepSkillGraphAgent(object):
             event_idx = len(self.mdp.all_salient_events_ever) + 1
             end_salient_event = SalientEvent(end, event_idx)
             successes, final_states = self.dsg_test_loop(trials, end_salient_event, start)
-            success_num += sum([(1 if succ else 0) for succ in successes])
+            pair_success_num = sum([(1 if succ else 0) for succ in successes])
+            success_num += pair_success_num
             total_runs += len(successes)
+
+            wandb.log({"test_pair_success_rate": pair_success_num / len(successes)})
+        wandb.log({"test_cycle_success_rate": success_num / total_runs})
         return success_num / total_runs
 
 if __name__ == "__main__":
@@ -454,11 +462,16 @@ if __name__ == "__main__":
     parser.add_argument("--switch_after", type=int, default=500)
     args = parser.parse_args()
 
+    wandb.init(
+        project=args.experiment_name,
+    )
+
     if args.enable_switch_env:
         assert args.episodes > args.switch_after, "Switch after greater or equal to episodes"
 
     from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeMDPClass import D4RLAntMazeMDP
     overall_mdp = D4RLAntMazeMDP(maze_env=args.initial_env, seed=args.seed, render=args.render)
+    wandb.log({"environment": args.initial_env})
     state_dim = overall_mdp.state_space_size()
     action_dim = overall_mdp.action_space_size()
 
@@ -505,6 +518,7 @@ if __name__ == "__main__":
         success_pre_env_switch = dsg_agent.run_test()
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
+        wandb.log({"environment": args.switch_to_env})
         success_post_env_switch = dsg_agent.run_test()
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
