@@ -3,6 +3,8 @@ import d4rl
 import numpy as np
 import random
 from copy import deepcopy
+import wandb
+from pathlib import Path
 
 from simple_rl.mdp.GoalDirectedMDPClass import GoalDirectedMDP
 from simple_rl.tasks.d4rl_ant_maze.D4RLAntMazeStateClass import D4RLAntMazeState
@@ -23,6 +25,8 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
 
         self.render = render
         self.seed = seed
+
+        self.total_eps = 0
 
         random.seed(seed)
         np.random.seed(seed)
@@ -50,6 +54,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def _consume_record_next(self):
         if self.record_next:
             self.record_next = False
+            self.recorded_last = True
             return True
         return False
 
@@ -106,7 +111,14 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def reset(self, episode=None):
         init_state_array = self.env.reset()
         self.init_state = self._get_state(init_state_array, done=False)
+
+        self.total_eps += 1
+        p = f"video/rl-video-episode-{self.total_eps}.mp4"
+        if Path(p).exists():
+            wandb.log({"test_videos": wandb.Video(p)})
+
         super(D4RLAntMazeMDP, self).reset()
+
 
     def set_xy(self, position):
         """ Used at test-time only. """
