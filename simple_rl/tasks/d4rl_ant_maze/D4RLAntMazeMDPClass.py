@@ -18,6 +18,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
 
         self.use_hard_coded_events = use_hard_coded_events
         self.record_next = True
+        self.total_eps = 0
 
         self.env = gym.make(self.env_name)
         self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next())
@@ -25,8 +26,6 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
 
         self.render = render
         self.seed = seed
-
-        self.total_eps = 0
 
         random.seed(seed)
         np.random.seed(seed)
