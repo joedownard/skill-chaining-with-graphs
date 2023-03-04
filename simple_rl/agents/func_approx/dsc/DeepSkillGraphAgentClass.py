@@ -446,7 +446,8 @@ class DeepSkillGraphAgent(object):
                     invalid_nodes.append(node)
             if node in self.planning_agent.plan_graph.option_nodes:
                 for traj in node.positive_examples:
-                    for pos in traj:
+                    for s in traj:
+                        pos = self.mdp.get_position(s)
                         if self.mdp.env.env.wrapped_env._is_in_collision(pos):
                             invalid_nodes.append(node)
                             break
