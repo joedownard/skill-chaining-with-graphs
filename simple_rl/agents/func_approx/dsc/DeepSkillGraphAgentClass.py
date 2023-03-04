@@ -441,6 +441,7 @@ class DeepSkillGraphAgent(object):
     def cull_invalid_states(self):
         invalid_options = []
         invalid_salients = []
+        print(self.planning_agent.plan_graph.plan_graph.nodes)
         for node in self.planning_agent.plan_graph.plan_graph.nodes:
             if node in self.planning_agent.plan_graph.salient_nodes:
                 if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
@@ -453,6 +454,7 @@ class DeepSkillGraphAgent(object):
                             invalid_options.append(node)
                             break
 
+        print(invalid_options + invalid_salients)
         for node in invalid_options + invalid_salients:
             self.planning_agent.plan_graph.plan_graph.remove_node(node)
         for node in invalid_salients:
