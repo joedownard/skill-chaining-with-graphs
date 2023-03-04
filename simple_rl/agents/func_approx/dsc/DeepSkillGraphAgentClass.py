@@ -466,7 +466,7 @@ class DeepSkillGraphAgent(object):
         for node in invalid_options:
             self.planning_agent.plan_graph.option_nodes.remove(node)
 
-        wandb.log({"culled_nodes": len(invalid_nodes)})
+        wandb.log({"culled_nodes": len(invalid_options + invalid_salients)})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
