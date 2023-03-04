@@ -439,22 +439,26 @@ class DeepSkillGraphAgent(object):
         return success_num / total_runs
 
     def cull_invalid_states(self):
-        invalid_nodes = []
+        invalid_options = []
+        invalid_salients = []
         for node in self.planning_agent.plan_graph.plan_graph.nodes:
             if node in self.planning_agent.plan_graph.salient_nodes:
                 if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
-                    invalid_nodes.append(node)
+                    invalid_salients.append(node)
             if node in self.planning_agent.plan_graph.option_nodes:
                 for traj in node.positive_examples:
                     for s in traj:
                         pos = self.mdp.get_position(s)
                         if self.mdp.env.env.wrapped_env._is_in_collision(pos):
-                            invalid_nodes.append(node)
+                            invalid_options.append(node)
                             break
-        for node in invalid_nodes:
+
+        for node in invalid_options + invalid_salients:
             self.planning_agent.plan_graph.plan_graph.remove_node(node)
+        for node in invalid_salients:
             self.planning_agent.plan_graph.salient_nodes.remove(node)
-            self.planning_agent.plan_graph.option_nodes(node)
+        for node in invalid_options:
+            self.planning_agent.plan_graph.option_nodes.remove(node)
 
         wandb.log({"culled_nodes": len(invalid_nodes)})
 
