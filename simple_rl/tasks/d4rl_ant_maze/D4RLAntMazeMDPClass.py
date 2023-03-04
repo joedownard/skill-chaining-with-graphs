@@ -111,7 +111,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         init_state_array = self.env.reset()
         self.init_state = self._get_state(init_state_array, done=False)
 
-        p = f"video/rl-video-episode-{self.total_eps-1}.mp4"
+        p = f"video/rl-video-episode-{self.total_eps-10}.mp4"
         if Path(p).exists():
             wandb.log({"test_videos": wandb.Video(p)})
         self.total_eps += 1
