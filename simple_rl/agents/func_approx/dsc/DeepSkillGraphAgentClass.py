@@ -438,6 +438,24 @@ class DeepSkillGraphAgent(object):
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
         return success_num / total_runs
 
+    def cull_invalid_states(self):
+        invalid_nodes = []
+        for node in self.planning_agent.plan_graph.plan_graph.nodes:
+            if node in self.planning_agent.plan_graph.salient_nodes:
+                if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
+                    invalid_nodes.append(node)
+            if node in self.planning_agent.plan_graph.option_nodes:
+                for pos in node.positive_examples:
+                    if self.mdp.env.env.wrapped_env._is_in_collision(pos):
+                        invalid_nodes.append(node)
+                        break
+        for node in invalid_nodes:
+            self.planning_agent.plan_graph.plan_graph.remove_node(node)
+            self.planning_agent.plan_graph.salient_nodes.remove(node)
+            self.planning_agent.plan_graph.option_nodes(node)
+
+        wandb.log({"culled_nodes": len(invalid_nodes)})
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment_name", type=str, help="Experiment Name")
@@ -460,6 +478,8 @@ if __name__ == "__main__":
     parser.add_argument("--enable_switch_env", action="store_true", default=False)
     parser.add_argument("--switch_to_env", type=str, default="antmaze-dynamic-rightmiddle-walls")
     parser.add_argument("--switch_after", type=int, default=500)
+    parser.add_argument("--test_pairs", type=int, default=100)
+    parser.add_argument("--test_repeats", type=int, default=5)
     args = parser.parse_args()
 
     wandb.init(
@@ -516,7 +536,7 @@ if __name__ == "__main__":
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
         success_pre_env_switch = dsg_agent.run_test()
-
+        dsg_agent.cull_invalid_states()
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         wandb.log({"environment": args.switch_to_env})
         success_post_env_switch = dsg_agent.run_test()
