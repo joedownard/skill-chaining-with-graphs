@@ -551,7 +551,7 @@ if __name__ == "__main__":
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
         success_pre_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)
 
-        # dsg_agent.mdp.switch_environment(args.switch_to_env)
+        dsg_agent.mdp.switch_environment(args.switch_to_env)
         dsg_agent.cull_invalid_states()
         wandb.log({"environment": args.switch_to_env})
         
