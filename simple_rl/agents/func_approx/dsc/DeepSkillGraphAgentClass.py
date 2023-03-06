@@ -475,6 +475,9 @@ class DeepSkillGraphAgent(object):
             if option in self.dsc_agent.mature_options:
                 self.dsc_agent.mature_options.remove(option)
 
+        wandb.log({"culled_options_from_chains": len(options_to_remove)})
+        wandb.log({"culled_chains": len(chains_to_remove)})
+
     def cull_invalid_states_planner(self):
         invalid_options = []
         invalid_salients = []
@@ -503,7 +506,7 @@ class DeepSkillGraphAgent(object):
         for node in invalid_options:
             self.planning_agent.plan_graph.option_nodes.remove(node)
 
-        wandb.log({"culled_nodes": len(invalid_options + invalid_salients)})
+        wandb.log({"culled_nodes_from_graph": len(invalid_options + invalid_salients)})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
