@@ -441,6 +441,41 @@ class DeepSkillGraphAgent(object):
         return success_num / total_runs
 
     def cull_invalid_states(self):
+        self.cull_invalid_states_planner()
+        self.cull_invalid_states_chainer()
+
+    def cull_invalid_states_chainer(self):
+        chains_to_remove = []
+        for chain in self.dsc_agent.chains:
+            done = False
+            for option in chain.options:
+                for traj in option.positive_examples:
+                    for s in traj:
+                        pos = self.mdp.get_position(s)
+                        if self.mdp.env.env.wrapped_env._is_in_collision(pos):
+                            chains_to_remove.append(chain)
+                            done = True
+                            break
+                    if done:
+                        break
+                if done:
+                    break
+
+        options_to_remove = []
+        for chain in chains_to_remove:
+            for option in chain.options:
+                options_to_remove.append(option)
+
+        for chain in chains_to_remove:
+            self.dsc_agent.chains.remove(chain)
+
+        for option in options_to_remove:
+            if option in self.dsc_agent.new_options:
+                self.dsc_agent.new_options.remove(option)
+            if option in self.dsc_agent.mature_options:
+                self.dsc_agent.mature_options.remove(option)
+
+    def cull_invalid_states_planner(self):
         invalid_options = []
         invalid_salients = []
 
