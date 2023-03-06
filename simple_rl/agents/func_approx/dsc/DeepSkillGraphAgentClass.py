@@ -218,6 +218,7 @@ class DeepSkillGraphAgent(object):
         else:
             self.create_skill_chains_if_needed(state, test_event, eval_mode=True, current_event=start_state_event)
 
+        self.mdp.record_next_ep()
         for episode in range(episodes):
             self.reset(episode, start_state)
             state = deepcopy(self.mdp.cur_state)
@@ -426,10 +427,11 @@ class DeepSkillGraphAgent(object):
         total_runs = 0
 
         for (start, end) in start_end_states:
-            self.mdp.record_next_ep()
             event_idx = len(self.mdp.all_salient_events_ever) + 1
             end_salient_event = SalientEvent(end, event_idx)
+
             successes, final_states = self.dsg_test_loop(trials, end_salient_event, start)
+
             pair_success_num = sum([(1 if succ else 0) for succ in successes])
             success_num += pair_success_num
             total_runs += len(successes)

@@ -53,7 +53,6 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def _consume_record_next(self):
         if self.record_next:
             self.record_next = False
-            self.recorded_last = True
             return True
         return False
 
