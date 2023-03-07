@@ -513,7 +513,7 @@ class SkillGraphPlanner(object):
         self.plan_graph.add_node(newly_created_option)
 
         # Skill Chain corresponding to the newly created option
-        chain = self.chainer.chains[newly_created_option.chain_id - 1]  # type: SkillChain
+        chain = self.chainer.chain_set[newly_created_option.chain_id]  # type: SkillChain
         is_leaf_node = newly_created_option in chain.get_leaf_nodes_from_skill_chain()
         init_salient_event = chain.init_salient_event
         target_salient_event = chain.target_salient_event
@@ -642,20 +642,20 @@ class SkillGraphPlanner(object):
     def does_exist_chain_for_event(self, event):
         assert isinstance(event, SalientEvent)
 
-        for chain in self.chainer.chains:  # type: SkillChain
+        for _, chain in self.chainer.chain_set.items():  # type: SkillChain
             if chain.target_salient_event == event:
                 return True
         return False
 
     def update_chain_init_descendants(self):
-        for chain in self.chainer.chains:  # type: SkillChain
+        for _, chain in self.chainer.chain_set.items():  # type: SkillChain
             descendants = self.plan_graph.get_reachable_nodes_from_source_node(chain.init_salient_event)
             ancestors = self.plan_graph.get_nodes_that_reach_target_node(chain.init_salient_event)
             chain.set_init_descendants(descendants)
             chain.set_init_ancestors(ancestors)
 
     def get_options_in_known_part_of_the_graph(self):
-        completed_chains = [chain for chain in self.chainer.chains if chain.is_chain_completed()]
+        completed_chains = [chain for _, chain in self.chainer.chain_set.items() if chain.is_chain_completed()]
 
         # Grab the learned options from the completed chains
         known_options = []
