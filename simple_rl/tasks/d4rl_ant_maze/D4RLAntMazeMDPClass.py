@@ -153,8 +153,8 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         num_tries = 0
         rejected = True
         while rejected and num_tries < 200:
-            low = np.array((self.xlims[0], self.ylims[0]))
-            high = np.array((self.xlims[1], self.ylims[1]))
+            low = np.array((-12, -12))
+            high = np.array((12, 12))
             sampled_point = np.random.uniform(low=low, high=high)
             rejected = self.env.env.wrapped_env._is_in_collision(sampled_point) or not cond(sampled_point)
             num_tries += 1
