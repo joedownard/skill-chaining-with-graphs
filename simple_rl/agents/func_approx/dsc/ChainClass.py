@@ -30,6 +30,9 @@ class SkillChain(object):
         self._is_deemed_completed = False
         self.completing_vertex = None
 
+    def __hash__(self):
+        return self.chain_id
+
     def __eq__(self, other):
         return self.chain_id == other.chain_id
 

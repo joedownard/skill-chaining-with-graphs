@@ -446,7 +446,7 @@ class DeepSkillGraphAgent(object):
 
     def cull_invalid_states_chainer(self):
         chains_to_remove = []
-        for chain in self.dsc_agent.chains:
+        for _, chain in self.dsc_agent.chain_set.items():
             done = False
             for option in chain.options:
                 for traj in option.positive_examples:
@@ -467,7 +467,7 @@ class DeepSkillGraphAgent(object):
                 options_to_remove.append(option)
 
         for chain in chains_to_remove:
-            self.dsc_agent.chains.remove(chain)
+            del self.dsc_agent.chain_set[chain]
 
         for option in options_to_remove:
             if option in self.dsc_agent.new_options:

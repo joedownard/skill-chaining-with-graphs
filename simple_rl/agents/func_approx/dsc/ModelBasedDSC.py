@@ -36,6 +36,8 @@ class ModelBasedSkillChaining(object):
         self.global_option = self.create_global_model_based_option()
 
         self.chains = []
+        self.chain_set = {}
+
         self.new_options = []
         self.mature_options = []
         self.current_option_idx = 1
@@ -51,10 +53,10 @@ class ModelBasedSkillChaining(object):
                 return option
 
     def _get_chains_corresponding_to_goal(self, goal):
-        chains = [chain for chain in self.chains if chain.target_salient_event(goal)]
+        chains = [chain for _, chain in self.chain_set.items() if chain.target_salient_event(goal)]
 
         if len(chains) == 0:
-            for chain in self.chains:
+            for _, chain in self.chain_set.items():
                 for option in chain.options:
                     if len(option.effect_set) > 0 and option.is_in_effect_set(goal) and chain not in chains:
                         chains.append(chain)
@@ -83,7 +85,7 @@ class ModelBasedSkillChaining(object):
     def disable_triggering_options_targeting_init_event(self, state):
         """ Disable off-policy triggers for all options that target the current salient events. """
         current_salient_events = self._get_current_salient_events(state)
-        trained_options = itertools.chain.from_iterable([chain.options for chain in self.chains])
+        trained_options = itertools.chain.from_iterable([chain.options for _, chain in self.chain_set.items()])
 
         for current_salient_event in current_salient_events:
             for option in trained_options:
@@ -115,16 +117,16 @@ class ModelBasedSkillChaining(object):
 
         return self.should_create_more_options() \
                and parent_option.get_training_phase() == "initiation_done" \
-               and self.chains[parent_option.chain_id - 1].should_continue_chaining()
+               and self.chain_set[parent_option.chain_id].should_continue_chaining()
 
     def should_create_more_options(self):
         """ Continue chaining as long as any chain is still accepting new options. """
-        return any([chain.should_continue_chaining() for chain in self.chains])
+        return any([chain.should_continue_chaining() for _, chain in self.chain_set.items()])
 
     def add_new_option_to_skill_chain(self, new_option):
         self.new_options.append(new_option)
-        chain_idx = new_option.chain_id - 1
-        self.chains[chain_idx].options.append(new_option)
+        chain_idx = new_option.chain_id
+        self.chain_set[chain_idx].options.append(new_option)
 
     def finish_option_initiation_phase(self, untrained_option):
         if untrained_option.get_training_phase() == "initiation_done":
@@ -188,10 +190,10 @@ class ModelBasedSkillChaining(object):
     # ------------------------------------------------------------
 
     def get_all_options(self):
-        return itertools.chain.from_iterable([chain.options for chain in self.chains])
+        return itertools.chain.from_iterable([chain.options for _, chain in self.chain_set.items()])
 
     def create_new_chain(self, *, init_event, target_event):
-        chain_id = len(self.chains) + 1
+        chain_id = len(self.chain_set)
         name = f"goal-option-{chain_id}"
         root_option = self.create_model_based_option(name=name,
                                                      parent=None,
@@ -208,8 +210,8 @@ class ModelBasedSkillChaining(object):
         return new_chain
 
     def add_skill_chain(self, new_chain):
-        if new_chain not in self.chains:
-            self.chains.append(new_chain)
+        if new_chain not in self.chain_set:
+            self.chain_set[new_chain.chain_id] = new_chain
 
     def create_child_option(self, parent_option):
 
