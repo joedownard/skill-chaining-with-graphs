@@ -467,7 +467,7 @@ class DeepSkillGraphAgent(object):
                 options_to_remove.append(option)
 
         for chain in chains_to_remove:
-            del self.dsc_agent.chain_set[chain]
+            del self.dsc_agent.chain_set[chain.chain_id]
 
         for option in options_to_remove:
             if option in self.dsc_agent.new_options:
