@@ -193,7 +193,7 @@ class ModelBasedSkillChaining(object):
         return itertools.chain.from_iterable([chain.options for _, chain in self.chain_set.items()])
 
     def create_new_chain(self, *, init_event, target_event):
-        chain_id = len(self.chain_set)
+        chain_id = len(self.chain_set) + 1
         name = f"goal-option-{chain_id}"
         root_option = self.create_model_based_option(name=name,
                                                      parent=None,
