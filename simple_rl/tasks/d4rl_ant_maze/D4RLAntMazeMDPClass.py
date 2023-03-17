@@ -101,7 +101,7 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
     def switch_environment(self, new_env):
         assert new_env in ("antmaze-dynamic-leftmiddle-walls", "antmaze-dynamic-middle-wall", "antmaze-dynamic-rightmiddle-walls"), new_env
         self.env = gym.make(new_env)
-        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next())
+        self.env = gym.wrappers.RecordVideo(self.env, 'video', episode_trigger = lambda x: self._consume_record_next(), starting_episode=self.total_eps)
         self.env_name = new_env
         self.env.seed(self.seed)
         self.env.reset()
