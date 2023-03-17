@@ -185,7 +185,7 @@ class DeepSkillGraphAgent(object):
                                                                   goal_salient_event.get_target_position(),
                                                                   episode, self.seed, self.experiment_name)
 
-            if episode > 0 and episode % 100 == 0:
+            if episode > 0 and episode % 10 == 0:
                 print("plotting success rates")
                 option_num_executions = [o.num_executions for o in self.planning_agent.plan_graph.option_nodes]
                 option_success_rates = [o.get_success_rate() for o in planner.plan_graph.option_nodes]
