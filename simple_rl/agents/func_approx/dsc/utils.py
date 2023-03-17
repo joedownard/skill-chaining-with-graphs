@@ -17,6 +17,7 @@ import os
 import ipdb
 from mpl_toolkits.mplot3d import Axes3D
 import math
+import wandb
 
 # Other imports.
 from simple_rl.mdp.StateClass import State
@@ -571,6 +572,8 @@ def visualize_graph(planner, episode, experiment_name, seed, use_target_states=T
     prefix = "bi_state_event_graph" if use_target_states else "bi_event_graph"
     plt.savefig(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")
     plt.close()
+
+    wandb.log({"skill_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")})
 
 
 def visualize_chain_graph(planner, episode, experiment_name, seed):

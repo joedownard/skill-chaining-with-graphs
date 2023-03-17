@@ -134,10 +134,10 @@ class D4RLAntMazeMDP(GoalDirectedMDP):
         observations = self.dataset
         x = [obs[0] for obs in observations]
         y = [obs[1] for obs in observations]
-        xlow, xhigh = min(x), max(x)
-        ylow, yhigh = min(y), max(y)
-        self.xlims = (xlow, xhigh)
-        self.ylims = (ylow, yhigh)
+        low = np.array((-6, -2))
+        high = np.array((6, 10))
+        self.xlims = (low[0], high[0])
+        self.ylims = (low[1], high[1])
 
     def get_x_y_low_lims(self):
         return self.xlims[0], self.ylims[0]

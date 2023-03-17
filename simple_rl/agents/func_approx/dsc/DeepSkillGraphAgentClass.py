@@ -185,13 +185,15 @@ class DeepSkillGraphAgent(object):
                                                                   goal_salient_event.get_target_position(),
                                                                   episode, self.seed, self.experiment_name)
 
-            if episode > 0 and episode % 500 == 0:
+            if episode > 0 and episode % 100 == 0:
+                print("plotting success rates")
                 option_num_executions = [o.num_executions for o in self.planning_agent.plan_graph.option_nodes]
                 option_success_rates = [o.get_success_rate() for o in planner.plan_graph.option_nodes]
                 plt.scatter(option_num_executions, option_success_rates)
                 plt.title(f"Episode: {episode}")
                 plt.savefig(f"{self.experiment_name}/option-success-rates-episode-{episode}.png")
                 plt.close()
+                wandb.log({"option_success_rates": wandb.Image(f"{self.experiment_name}/option-success-rates-episode-{episode}.png")})
 
         return successes
 
@@ -590,7 +592,7 @@ if __name__ == "__main__":
         success_pre_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
-        dsg_agent.cull_invalid_states()
+        # dsg_agent.cull_invalid_states()
         wandb.log({"environment": args.switch_to_env})
         
         success_post_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)

@@ -585,8 +585,9 @@ class SkillGraphPlanner(object):
         if chain.should_complete_chain(newly_created_option):
             chain.set_chain_completed()
 
-        # if chain.is_chain_completed():
-        #     visualize_graph(self, episode, self.chainer.experiment_name, self.chainer.seed, True)
+        if chain.is_chain_completed():
+            image = "ant_maze_middle.png" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle.png"
+            visualize_chain_graph(self, episode, self.chainer.experiment_name, self.chainer.seed, True, background_img_fname=image)
 
     # -----------------------------–––––––--------------
     # Utility Functions
