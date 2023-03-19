@@ -606,7 +606,7 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
     for node in planner.plan_graph.option_nodes:
         print("drawing node")
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
-            if isinstance(node, (ModelBasedOption, Option)) and isinstance(node, (ModelBasedOption, Option)):
+            if isinstance(node, (ModelBasedOption, Option)) and isinstance(neighbour, (ModelBasedOption, Option)):
                 x1, y1 = _get_option_representative_point(node)
                 x2, y2 = _get_option_representative_point(neighbour)
                 _plot_pair(x1, y1, x2, y2)
