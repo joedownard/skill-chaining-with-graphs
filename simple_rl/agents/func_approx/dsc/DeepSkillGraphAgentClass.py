@@ -190,7 +190,7 @@ class DeepSkillGraphAgent(object):
                 print("plotting success rates")
 
                 image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-                dsg_agent.visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.chainer.seed, background_img_fname=image)
+                visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.chainer.seed, background_img_fname=image)
 
                 option_num_executions = [o.num_executions for o in self.planning_agent.plan_graph.option_nodes]
                 option_success_rates = [o.get_success_rate() for o in planner.plan_graph.option_nodes]
@@ -595,7 +595,7 @@ if __name__ == "__main__":
         dsg_agent.cull_invalid_states()
 
         image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-        dsg_agent.visualize_chain_graph(planner, episode, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
+        visualize_chain_graph(planner, episode, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
         wandb.log({"environment": args.switch_to_env})
         
