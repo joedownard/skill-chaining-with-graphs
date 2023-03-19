@@ -603,6 +603,7 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         plt.scatter(x, y, c="black")
 
     for node in planner.plan_graph.plan_graph.nodes:
+        print("drawing node")
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
             x1, y1 = _get_representative_point(node)
             x2, y2 = _get_representative_point(neighbour)
