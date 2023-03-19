@@ -576,7 +576,7 @@ def visualize_graph(planner, episode, experiment_name, seed, use_target_states=T
     wandb.log({"skill_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")})
 
 
-def visualize_chain_graph(planner, episode, experiment_name, seed):
+def visualize_chain_graph(planner, episode, experiment_name, seed, background_img_fname="ant_maze_big_domain"):
     from simple_rl.agents.func_approx.dsc.OptionClass import Option
 
     def _get_option_representative_point(option):
@@ -603,11 +603,10 @@ def visualize_chain_graph(planner, episode, experiment_name, seed):
         plt.scatter(x, y, c="black")
 
     for chain in planner.chainer.chains:
-        if chain.is_chain_completed():
-            if chain.completing_vertex is not None:
-                x1, y1 = _get_representative_point(chain.completing_vertex[0])
-                x2, y2 = _get_representative_point(chain.target_salient_event)
-                _plot_pair(x1, y1, x2, y2)
+        for option in chain.options:
+            x1, y1 = _get_representative_point(option)
+            x2, y2 = _get_representative_point(option.parent)
+            _plot_pair(x1, y1, x2, y2)
 
     plt.xticks([])
     plt.yticks([])
@@ -615,11 +614,18 @@ def visualize_chain_graph(planner, episode, experiment_name, seed):
     x_low_lim, y_low_lim = planner.mdp.get_x_y_low_lims()
     x_high_lim, y_high_lim = planner.mdp.get_x_y_high_lims()
 
+    filename = os.path.join(os.getcwd(), f"{background_img_fname}.png")
+    if os.path.isfile(filename):
+        background_image = imageio.imread(filename)
+        plt.imshow(background_image, zorder=0, alpha=0.5, extent=[x_low_lim, x_high_lim, y_low_lim, y_high_lim])
+
     plt.xlim((x_low_lim, x_high_lim))
     plt.ylim((y_low_lim, y_high_lim))
 
     plt.savefig(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")
     plt.close()
+
+    wandb.log({"skill_graphs": wandb.Image(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")})
 
 def plot_dco_salient_event(ax, salient_event, states):
     option = salient_event.covering_option

@@ -13,6 +13,7 @@ from simple_rl.agents.func_approx.dsc.MBOptionClass import ModelBasedOption
 from simple_rl.agents.func_approx.dsc.utils import *
 from simple_rl.mdp import MDP, State
 from simple_rl.mdp.GoalDirectedMDPClass import GoalDirectedMDP
+from simple_rl.agents.func_approx.dsc.utils import visualize_chain_graph
 
 
 class DeepSkillGraphAgent(object):
@@ -185,8 +186,12 @@ class DeepSkillGraphAgent(object):
                                                                   goal_salient_event.get_target_position(),
                                                                   episode, self.seed, self.experiment_name)
 
-            if episode > 0 and episode % 10 == 0:
+            if episode > 0 and episode % 25 == 0:
                 print("plotting success rates")
+
+                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+                dsg_agent.visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.chainer.seed, background_img_fname=image)
+
                 option_num_executions = [o.num_executions for o in self.planning_agent.plan_graph.option_nodes]
                 option_success_rates = [o.get_success_rate() for o in planner.plan_graph.option_nodes]
                 plt.scatter(option_num_executions, option_success_rates)
@@ -451,16 +456,11 @@ class DeepSkillGraphAgent(object):
         for _, chain in self.dsc_agent.chain_set.items():
             done = False
             for option in chain.options:
-                for traj in option.positive_examples:
-                    for s in traj:
-                        pos = self.mdp.get_position(s)
-                        if self.mdp.env.env.wrapped_env._is_in_collision(pos):
-                            chains_to_remove.append(chain)
-                            done = True
-                            break
-                    if done:
-                        break
-                if done:
+                effect_positions = np.array([planner.mdp.get_position(state) for state in option.effect_set])
+                med_pos =  np.median(effect_positions, axis=0)
+                pos = self.mdp.get_position(med_pos)
+                if self.mdp.env.env.wrapped_env._is_in_collision(pos):
+                    chains_to_remove.append(chain)
                     break
 
         options_to_remove = []
@@ -593,6 +593,10 @@ if __name__ == "__main__":
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         dsg_agent.cull_invalid_states()
+
+        image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        dsg_agent.visualize_chain_graph(planner, episode, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
+
         wandb.log({"environment": args.switch_to_env})
         
         success_post_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)
