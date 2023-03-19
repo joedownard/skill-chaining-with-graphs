@@ -23,6 +23,8 @@ import wandb
 from simple_rl.mdp.StateClass import State
 from simple_rl.agents.func_approx.dsc.SalientEventClass import SalientEvent
 from simple_rl.agents.func_approx.dqn.DQNAgentClass import DQNAgent
+from simple_rl.agents.func_approx.dsc.OptionClass import Option as MFOption
+from simple_rl.agents.func_approx.dsc.MBOptionClass import ModelBasedOption
 
 class Experience(object):
     def __init__(self, s, a, r, s_prime):
