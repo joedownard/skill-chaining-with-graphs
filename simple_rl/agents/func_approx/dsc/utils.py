@@ -23,7 +23,6 @@ import wandb
 from simple_rl.mdp.StateClass import State
 from simple_rl.agents.func_approx.dsc.SalientEventClass import SalientEvent
 from simple_rl.agents.func_approx.dqn.DQNAgentClass import DQNAgent
-from simple_rl.agents.func_approx.dsc.OptionClass import Option as MFOption
 from simple_rl.agents.func_approx.dsc.MBOptionClass import ModelBasedOption
 
 class Experience(object):
@@ -607,7 +606,7 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
     for node in planner.plan_graph.option_nodes:
         print("drawing node")
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
-            if isinstance(node, (ModelBasedOption, MFOption)):
+            if isinstance(node, (ModelBasedOption, Option)):
                 x1, y1 = _get_option_representative_point(node)
                 x2, y2 = _get_option_representative_point(neighbour)
                 _plot_pair(x1, y1, x2, y2)
