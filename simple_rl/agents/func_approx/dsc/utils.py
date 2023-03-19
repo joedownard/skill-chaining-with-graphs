@@ -602,12 +602,13 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         plt.plot(x, y, marker, c=edge_color, alpha=0.1)
         plt.scatter(x, y, c="black")
 
-    for node in planner.plan_graph.plan_graph.nodes:
+    for node in planner.plan_graph.option_nodes:
         print("drawing node")
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
-            x1, y1 = _get_representative_point(node)
-            x2, y2 = _get_representative_point(neighbour)
-            _plot_pair(x1, y1, x2, y2)
+            if isinstance(node, (ModelBasedOption, MFOption)):
+                x1, y1 = _get_option_representative_point(node)
+                x2, y2 = _get_option_representative_point(neighbour)
+                _plot_pair(x1, y1, x2, y2)
 
     plt.xticks([])
     plt.yticks([])
