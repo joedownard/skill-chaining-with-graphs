@@ -458,8 +458,7 @@ class DeepSkillGraphAgent(object):
             for option in chain.options:
                 effect_positions = np.array([planner.mdp.get_position(state) for state in option.effect_set])
                 med_pos =  np.median(effect_positions, axis=0)
-                pos = self.mdp.get_position(med_pos)
-                if self.mdp.env.env.wrapped_env._is_in_collision(pos):
+                if self.mdp.env.env.wrapped_env._is_in_collision(med_pos):
                     chains_to_remove.append(chain)
                     break
 
