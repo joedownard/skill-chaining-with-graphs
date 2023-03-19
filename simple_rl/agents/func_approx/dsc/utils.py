@@ -602,10 +602,10 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         plt.plot(x, y, marker, c=edge_color, alpha=0.1)
         plt.scatter(x, y, c="black")
 
-    for chain in planner.chainer.chains:
-        for option in chain.options:
-            x1, y1 = _get_representative_point(option)
-            x2, y2 = _get_representative_point(option.parent)
+    for node in planner.plan_graph.plan_graph.nodes:
+        for neighbour in planner.plan_graph.plan_graph.neighbors(node):
+            x1, y1 = _get_representative_point(node)
+            x2, y2 = _get_representative_point(neighbour)
             _plot_pair(x1, y1, x2, y2)
 
     plt.xticks([])
