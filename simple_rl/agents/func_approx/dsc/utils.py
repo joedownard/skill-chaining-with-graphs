@@ -591,7 +591,7 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         return init_x, init_y, term_x, term_y
 
     def _plot_inter_option(init_x, init_y, term_x, term_y):
-        plt.plot(init, term, c="blue", alpha=0.1)
+        plt.plot([init_x, term_x], [init_y, term_y], c="blue", alpha=0.1)
         plt.plot(init_x, init_y, "o", c="green")
         plt.plot(term_x, term_y, "o", c="red")
 
