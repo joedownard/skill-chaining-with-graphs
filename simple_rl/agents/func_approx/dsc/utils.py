@@ -591,16 +591,14 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         return init_x, init_y, term_x, term_y
 
     def _plot_inter_option(init_x, init_y, term_x, term_y):
-        init = [init_x, init_y]
-        term = [term_x, term_y]
-        plt.plot(init, term, "o-", c="blue", alpha=0.1)
-        plt.scatter(init, c="green")
-        plt.scatter(term, c="red")
+        plt.plot(init, term, c="blue", alpha=0.1)
+        plt.plot(init_x, init_y, "o", c="green")
+        plt.plot(term_x, term_y, "o", c="red")
 
     def _plot_option_to_option(ax, ay, bx, by):
-        a = [ax, ay]
-        b = [bx, by]
-        plt.plot(a, b, "o-", c="black", alpha=0.1)
+        a = [ax, bx]
+        b = [ay, by]
+        plt.plot(a, b, "-", c="black", alpha=0.1)
 
     for node in planner.plan_graph.option_nodes:
         if not isinstance(node, (ModelBasedOption, Option)):
