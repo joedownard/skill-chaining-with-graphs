@@ -450,7 +450,9 @@ class ModelBasedOption(object):
             num_tries = num_tries + 1
             sampled_trajectory_idx = random.choice(range(len(self.positive_examples)))
             sampled_trajectory = self.positive_examples[sampled_trajectory_idx]
-            sampled_state = self.get_first_state_in_classifier(sampled_trajectory)
+            s = self.get_first_state_in_classifier(sampled_trajectory)
+            if s is not None:
+                sampled_states.append(s)
         return sampled_states
 
     def sample_from_initiation_region_fast_and_epsilon(self):

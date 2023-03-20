@@ -588,6 +588,8 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         init_positions = np.array([planner.mdp.get_position(state) for state in option.states_from_initiation_region_fast()])
         init_x, init_y =  np.median(init_positions, axis=0)
 
+        return init_x, init_y, term_x, term_y
+
     def _plot_inter_option(init_x, init_y, term_x, term_y):
         init = [init_x, init_y]
         term = [term_x, term_y]
