@@ -13,7 +13,7 @@ from simple_rl.agents.func_approx.dsc.MBOptionClass import ModelBasedOption
 from simple_rl.agents.func_approx.dsc.utils import *
 from simple_rl.mdp import MDP, State
 from simple_rl.mdp.GoalDirectedMDPClass import GoalDirectedMDP
-from simple_rl.agents.func_approx.dsc.utils import visualize_chain_graph
+from simple_rl.agents.func_approx.dsc.utils import visualize_chain_graph, visualize_graph
 
 
 class DeepSkillGraphAgent(object):
@@ -191,6 +191,7 @@ class DeepSkillGraphAgent(object):
 
                 image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
                 visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+                visualize_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
 
                 option_num_executions = [o.num_executions for o in self.planning_agent.plan_graph.option_nodes]
                 option_success_rates = [o.get_success_rate() for o in planner.plan_graph.option_nodes]

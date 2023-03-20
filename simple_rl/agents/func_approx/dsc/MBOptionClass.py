@@ -442,6 +442,17 @@ class ModelBasedOption(object):
             sampled_state = self.get_first_state_in_classifier(sampled_trajectory)
         return sampled_state
 
+    def states_from_initiation_region_fast(self):
+        """ Sample from the pessimistic initiation classifier. """
+        num_tries = 0
+        sampled_states = []
+        while num_tries < 200:
+            num_tries = num_tries + 1
+            sampled_trajectory_idx = random.choice(range(len(self.positive_examples)))
+            sampled_trajectory = self.positive_examples[sampled_trajectory_idx]
+            sampled_state = self.get_first_state_in_classifier(sampled_trajectory)
+        return sampled_states
+
     def sample_from_initiation_region_fast_and_epsilon(self):
         """ Sample from the pessimistic initiation classifier. """
         def compile_states(s):

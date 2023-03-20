@@ -550,11 +550,12 @@ def visualize_graph(planner, episode, experiment_name, seed, use_target_states=T
 
     for event1 in events:
         for event2 in events:
-            if event1 != event2:
-                if is_connected(event1, event2) and is_connected(event2, event1):
-                    _plot_event_pair(event1, event2, "o-", edge_color="black")
-                elif is_connected(event1, event2) or is_connected(event2, event1):
-                    _plot_event_pair(event1, event2, "o--", edge_color="tab:gray")
+            if event1 in planner.plan_graph.salient_nodes and event2 in planner.plan_graph.salient_nodes:
+                if event1 != event2:
+                    if is_connected(event1, event2) and is_connected(event2, event1):
+                        _plot_event_pair(event1, event2, "o-", edge_color="black")
+                    elif is_connected(event1, event2) or is_connected(event2, event1):
+                        _plot_event_pair(event1, event2, "o--", edge_color="tab:gray")
 
     plt.xticks([])
     plt.yticks([])
@@ -574,42 +575,44 @@ def visualize_graph(planner, episode, experiment_name, seed, use_target_states=T
     plt.savefig(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")
     plt.close()
 
-    wandb.log({"skill_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")})
+    wandb.log({"salient_event_connectivity_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")})
 
 
 def visualize_chain_graph(planner, episode, experiment_name, seed, background_img_fname="ant_maze_big_domain"):
     from simple_rl.agents.func_approx.dsc.OptionClass import Option
 
-    def _get_option_representative_point(option):
-        effect_positions = np.array([planner.mdp.get_position(state) for state in option.effect_set])
-        return np.median(effect_positions, axis=0)
+    def _get_start_end_point(option):
+        effect_positions = np.array([planner.mdp.get_position(state) for state in option.get_effective_effect_set()])
+        term_x, term_y =  np.median(effect_positions, axis=0)
 
-    def _get_event_representative_point(event):
-        if event.get_target_position() is not None:
-            return event.get_target_position()
-        trigger_positions = [event._get_position(s) for s in event.trigger_points]
-        trigger_positions = np.array(trigger_positions)
-        return np.median(trigger_positions, axis=0)
+        init_positions = np.array([planner.mdp.get_position(state) for state in option.states_from_initiation_region_fast()])
+        init_x, init_y =  np.median(init_positions, axis=0)
 
-    def _get_representative_point(event):
-        if isinstance(event, Option):
-            return _get_option_representative_point(event)
-        elif isinstance(event, SalientEvent):
-            return _get_event_representative_point(event)
-        raise ValueError(event)
+    def _plot_inter_option(init_x, init_y, term_x, term_y):
+        init = [init_x, init_y]
+        term = [term_x, term_y]
+        plt.plot(init, term, "o-", c="blue", alpha=0.1)
+        plt.scatter(init, c="green")
+        plt.scatter(term, c="red")
 
-    def _plot_pair(xa, ya, xb, yb, marker="o-", edge_color="black"):
-        x = [xa, ya]; y = [xb, yb]
-        plt.plot(x, y, marker, c=edge_color, alpha=0.1)
-        plt.scatter(x, y, c="black")
+    def _plot_option_to_option(ax, ay, bx, by):
+        a = [ax, ay]
+        b = [bx, by]
+        plt.plot(a, b, "o-", c="black", alpha=0.1)
 
     for node in planner.plan_graph.option_nodes:
-        print("drawing node")
+        if not isinstance(node, (ModelBasedOption, Option)):
+            continue
+
+        init_x, init_y, term_x, term_y = _get_start_end_point(node)
+        _plot_inter_option(init_x, init_y, term_x, term_y)
+
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
-            if isinstance(node, (ModelBasedOption, Option)) and isinstance(neighbour, (ModelBasedOption, Option)):
-                x1, y1 = _get_option_representative_point(node)
-                x2, y2 = _get_option_representative_point(neighbour)
-                _plot_pair(x1, y1, x2, y2)
+            if not isinstance(neighbour, (ModelBasedOption, Option)):
+                continue
+            neighbour_init_x, neighbour_init_y, _, _ = _get_start_end_point(neighbour)
+            _plot_option_to_option(term_x, term_y, neighbour_init_x, neighbour_init_y)
+
 
     plt.xticks([])
     plt.yticks([])
@@ -628,7 +631,7 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
     plt.savefig(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")
     plt.close()
 
-    wandb.log({"skill_graphs": wandb.Image(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")})
+    wandb.log({"options_connectivity_graph": wandb.Image(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")})
 
 def plot_dco_salient_event(ax, salient_event, states):
     option = salient_event.covering_option
