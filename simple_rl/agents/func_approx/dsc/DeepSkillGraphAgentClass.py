@@ -430,7 +430,14 @@ class DeepSkillGraphAgent(object):
 
     def visualize_option_successes(self, position_and_success_rate_list, title, background_img_fname):
         for pos, success_rate in position_and_success_rate_list:
-            plt.plot(pos[0], pos[1], "o", c="red")
+            colour = "red"
+            if success_rate > 0.75:
+                colour = "green"
+            elif success_rate > 0.5:
+                colour = "yellow"
+            elif success_rate > 0.3:
+                colour = "orange"
+            plt.plot(pos[0], pos[1], ".", c=colour)
 
         plt.xticks([])
         plt.yticks([])
