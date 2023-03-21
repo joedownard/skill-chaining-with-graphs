@@ -428,7 +428,7 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
-    def visualize_option_successes(self, position_and_success_rate_list, title, background_img_fname):
+    def visualize_option_successes(self, position_and_success_rate_list, title, background_img_fname, num):
         for pos, success_rate in position_and_success_rate_list:
             colour = "red"
             if success_rate > 0.75:
@@ -453,13 +453,13 @@ class DeepSkillGraphAgent(object):
         plt.xlim((x_low_lim, x_high_lim))
         plt.ylim((y_low_lim, y_high_lim))
 
-        plt.savefig(f"value_function_plots/{experiment_name}/{title}_episode_{episode}_seed_{seed}.png")
+        plt.savefig(f"value_function_plots/{self.experiment_name}/{title}_episode_{num}.png")
         plt.close()
 
-        wandb.log({title: wandb.Image(f"value_function_plots/{experiment_name}/{title}_episode_{episode}_seed_{seed}.png")})
+        wandb.log({title: wandb.Image(f"value_function_plots/{self.experiment_name}/{title}_episode_{num}.png")})
 
 
-    def run_test(self, pairs=100, trials=5):
+    def run_test(self, num, pairs=100, trials=5):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
@@ -482,8 +482,8 @@ class DeepSkillGraphAgent(object):
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
 
         image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-        self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "option_start_success_map", image)
-        self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "option_end_success_map", image)
+        self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "option_start_success_map", image, num)
+        self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "option_end_success_map", image, num)
 
         return success_num / total_runs
 
@@ -629,13 +629,13 @@ if __name__ == "__main__":
 
     if not args.enable_switch_env:
         num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
-        print("Success Rate: ", dsg_agent.run_test())
+        print("Success Rate: ", dsg_agent.run_test(1))
     else:
         eps_first_batch = args.switch_after
         eps_second_batch = args.episodes - args.switch_after
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
-        success_pre_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)
+        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         dsg_agent.cull_invalid_states()
@@ -647,10 +647,10 @@ if __name__ == "__main__":
 
         wandb.log({"environment": args.switch_to_env})
         
-        success_post_env_switch = dsg_agent.run_test(args.test_pairs, args.test_repeats)
+        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
-        success_post_new_env_training = dsg_agent.run_test(args.test_pairs, args.test_repeats)
+        success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
 
         print("Success Rate on initial env post training: ", success_pre_env_switch)
         print("Success Rate on new env post switch: ", success_post_env_switch)
