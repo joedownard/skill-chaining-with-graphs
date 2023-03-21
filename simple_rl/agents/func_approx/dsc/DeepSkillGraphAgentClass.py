@@ -640,9 +640,9 @@ if __name__ == "__main__":
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         dsg_agent.cull_invalid_states()
 
-        image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-        visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, self.dsc_agent.seed, background_img_fname=image)
-        visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+        image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
+        visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
 
         wandb.log({"environment": args.switch_to_env})
