@@ -428,11 +428,37 @@ class DeepSkillGraphAgent(object):
             self.mdp.set_xy(start_position)
         print("*" * 80, flush=True)
 
+    def visualize_option_successes(self, position_and_success_rate_list, title, background_img_fname):
+        for pos, success_rate in position_and_success_rate_list:
+            plt.plot(pos[0], pos[1], "o", c="red")
+
+        plt.xticks([])
+        plt.yticks([])
+
+        x_low_lim, y_low_lim = planner.mdp.get_x_y_low_lims()
+        x_high_lim, y_high_lim = planner.mdp.get_x_y_high_lims()
+
+        filename = os.path.join(os.getcwd(), f"{background_img_fname}.png")
+        if os.path.isfile(filename):
+            background_image = imageio.imread(filename)
+            plt.imshow(background_image, zorder=0, alpha=0.5, extent=[x_low_lim, x_high_lim, y_low_lim, y_high_lim])
+
+        plt.xlim((x_low_lim, x_high_lim))
+        plt.ylim((y_low_lim, y_high_lim))
+
+        plt.savefig(f"value_function_plots/{experiment_name}/{title}_episode_{episode}_seed_{seed}.png")
+        plt.close()
+
+        wandb.log({title: wandb.Image(f"value_function_plots/{experiment_name}/{title}_episode_{episode}_seed_{seed}.png")})
+
+
     def run_test(self, pairs=100, trials=5):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
         total_runs = 0
+
+        start_end_success_rate = []
 
         for (start, end) in start_end_states:
             event_idx = len(self.mdp.all_salient_events_ever) + 1
@@ -441,11 +467,17 @@ class DeepSkillGraphAgent(object):
             successes, final_states = self.dsg_test_loop(trials, end_salient_event, start)
 
             pair_success_num = sum([(1 if succ else 0) for succ in successes])
+            start_end_success_rate.append((start, end, pair_success_num / len(successes)))
             success_num += pair_success_num
             total_runs += len(successes)
 
             wandb.log({"test_pair_success_rate": pair_success_num / len(successes)})
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
+
+        image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "option_start_success_map", image)
+        self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "option_end_success_map", image)
+
         return success_num / total_runs
 
     def cull_invalid_states(self):
@@ -601,8 +633,10 @@ if __name__ == "__main__":
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         dsg_agent.cull_invalid_states()
 
-        image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-        visualize_chain_graph(planner, episode, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
+        image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+        visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+
 
         wandb.log({"environment": args.switch_to_env})
         
