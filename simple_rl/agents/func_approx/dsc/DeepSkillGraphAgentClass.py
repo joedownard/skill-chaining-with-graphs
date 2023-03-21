@@ -457,11 +457,18 @@ class DeepSkillGraphAgent(object):
         for _, chain in self.dsc_agent.chain_set.items():
             done = False
             for option in chain.options:
-                effect_positions = np.array([planner.mdp.get_position(state) for state in option.effect_set])
-                med_pos =  np.median(effect_positions, axis=0)
-                if self.mdp.env.env.wrapped_env._is_in_collision(med_pos):
-                    chains_to_remove.append(chain)
+                for traj in option.positive_examples:
+                    for s in traj:
+                        pos = self.mdp.get_position(s)
+                        if self.mdp.env.env.wrapped_env._is_in_collision(pos):
+                            chains_to_remove.append(chain)
+                            done = True
+                            break
+                    if done:
+                        break
+                if done:
                     break
+        
 
         options_to_remove = []
         for chain in chains_to_remove:
