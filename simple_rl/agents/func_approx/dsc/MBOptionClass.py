@@ -43,6 +43,7 @@ class ModelBasedOption(object):
         self.option_idx = option_idx
 
         self.num_goal_hits = 0
+
         self.num_executions = 0
         self.gestation_period = gestation_period
 
@@ -305,6 +306,7 @@ class ModelBasedOption(object):
         if reached_parent and self.last_episode_term_triggered != episode:
             self.num_goal_hits += 1
             self.last_episode_term_triggered = episode
+
 
         if self.use_vf and not eval_mode:
             self.update_value_function(option_transitions,

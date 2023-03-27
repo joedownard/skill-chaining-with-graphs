@@ -468,6 +468,9 @@ class DeepSkillGraphAgent(object):
         start_end_success_rate = []
 
         for (start, end) in start_end_states:
+            if total_runs % 20 == 0:
+                self.cull_low_success_rate_options()
+
             event_idx = len(self.mdp.all_salient_events_ever) + 1
             end_salient_event = SalientEvent(end, event_idx)
 
@@ -486,6 +489,59 @@ class DeepSkillGraphAgent(object):
         self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "option_end_success_map", image, num)
 
         return success_num / total_runs
+
+    def cull_low_success_rate_options(self):
+        self.cull_low_success_rate_options_chainer()
+        self.cull_low_success_rate_options_planner()
+
+    def cull_low_success_rate_options_chainer(self):
+        chains_to_remove = []
+        for _, chain in self.dsc_agent.chain_set.items():
+            done = False
+            for option in chain.options:
+                if sum([(1 if s else 0) for s in option.success_curve[-5:]]) <= 2:
+                    chains_to_remove.append(chain)
+                    break
+
+        options_to_remove = []
+        for chain in chains_to_remove:
+            for option in chain.options:
+                options_to_remove.append(option)
+
+        for chain in chains_to_remove:
+            del self.dsc_agent.chain_set[chain.chain_id]
+
+        for option in options_to_remove:
+            if option in self.dsc_agent.new_options:
+                self.dsc_agent.new_options.remove(option)
+            if option in self.dsc_agent.mature_options:
+                self.dsc_agent.mature_options.remove(option)
+
+        wandb.log({"low_success_rate_culled_options_from_chains": len(options_to_remove)})
+        wandb.log({"low_success_rate_culled_chains": len(chains_to_remove)})
+
+    def cull_low_success_rate_options_planner(self):
+        invalid_options = []
+        invalid_salients = []
+
+        for node in self.planning_agent.plan_graph.plan_graph.nodes:
+            if node in self.planning_agent.plan_graph.salient_nodes:
+                if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
+                    invalid_salients.append(node)
+            elif node in self.planning_agent.plan_graph.option_nodes:
+                if sum([(1 if s else 0) for s in node.success_curve[-5:]]) <= 2:
+                    invalid_options.append(node)
+                    break
+
+
+        for node in invalid_options + invalid_salients:
+            self.planning_agent.plan_graph.plan_graph.remove_node(node)
+        for node in invalid_salients:
+            self.planning_agent.plan_graph.salient_nodes.remove(node)
+        for node in invalid_options:
+            self.planning_agent.plan_graph.option_nodes.remove(node)
+
+        wandb.log({"low_success_rate_culled_nodes_from_graph": len(invalid_options + invalid_salients)})
 
     def cull_invalid_states(self):
         self.cull_invalid_states_planner()
