@@ -18,6 +18,7 @@ import ipdb
 from mpl_toolkits.mplot3d import Axes3D
 import math
 import wandb
+import uuid
 
 # Other imports.
 from simple_rl.mdp.StateClass import State
@@ -570,12 +571,13 @@ def visualize_graph(planner, episode, experiment_name, seed, use_target_states=T
 
     plt.xlim((x_low_lim, x_high_lim))
     plt.ylim((y_low_lim, y_high_lim))
+    id = uuid.uuid4()
 
     prefix = "bi_state_event_graph" if use_target_states else "bi_event_graph"
-    plt.savefig(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")
+    plt.savefig(f"value_function_plots/{experiment_name}/{prefix}_episode_{id}_seed_{seed}.png")
     plt.close()
 
-    wandb.log({"salient_event_connectivity_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{episode}_seed_{seed}.png")})
+    wandb.log({"salient_event_connectivity_graphs": wandb.Image(f"value_function_plots/{experiment_name}/{prefix}_episode_{id}_seed_{seed}.png")})
 
 
 def visualize_chain_graph(planner, episode, experiment_name, seed, background_img_fname="ant_maze_big_domain"):
@@ -627,11 +629,12 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
 
     plt.xlim((x_low_lim, x_high_lim))
     plt.ylim((y_low_lim, y_high_lim))
+    id = uuid.uuid4()
 
-    plt.savefig(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")
+    plt.savefig(f"value_function_plots/{experiment_name}/chain_graph_episode_{id}_seed_{seed}.png")
     plt.close()
 
-    wandb.log({"options_connectivity_graph": wandb.Image(f"value_function_plots/{experiment_name}/chain_graph_episode_{episode}_seed_{seed}.png")})
+    wandb.log({"options_connectivity_graph": wandb.Image(f"value_function_plots/{experiment_name}/chain_graph_episode_{id}_seed_{seed}.png")})
 
 def plot_dco_salient_event(ax, salient_event, states):
     option = salient_event.covering_option

@@ -470,6 +470,10 @@ class DeepSkillGraphAgent(object):
         for (start, end) in start_end_states:
             if total_runs % 20 == 0 and cull_naturally:
                 self.cull_low_success_rate_options()
+                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+                visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+                visualize_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
+            
 
             event_idx = len(self.mdp.all_salient_events_ever) + 1
             end_salient_event = SalientEvent(end, event_idx)
@@ -531,7 +535,6 @@ class DeepSkillGraphAgent(object):
             elif node in self.planning_agent.plan_graph.option_nodes:
                 if len(node.success_curve) > 5 and sum([(1 if s else 0) for s in node.success_curve[-5:]]) <= 2:
                     invalid_options.append(node)
-                    break
 
 
         for node in invalid_options + invalid_salients:
