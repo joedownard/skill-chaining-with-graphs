@@ -459,7 +459,7 @@ class DeepSkillGraphAgent(object):
         wandb.log({title: wandb.Image(f"value_function_plots/{self.experiment_name}/{title}_episode_{num}.png")})
 
 
-    def run_test(self, num, pairs=100, trials=5):
+    def run_test(self, num, pairs=100, trials=5, cull_naturally=False):
         num_start_end_tests = pairs
         start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
@@ -468,7 +468,7 @@ class DeepSkillGraphAgent(object):
         start_end_success_rate = []
 
         for (start, end) in start_end_states:
-            if total_runs % 20 == 0:
+            if total_runs % 20 == 0 and cull_naturally:
                 self.cull_low_success_rate_options()
 
             event_idx = len(self.mdp.all_salient_events_ever) + 1
@@ -691,10 +691,10 @@ if __name__ == "__main__":
         eps_second_batch = args.episodes - args.switch_after
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
-        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
+        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
-        dsg_agent.cull_invalid_states()
+        # dsg_agent.cull_invalid_states()
 
         image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
@@ -703,7 +703,7 @@ if __name__ == "__main__":
 
         wandb.log({"environment": args.switch_to_env})
         
-        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
+        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True)
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
         success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
