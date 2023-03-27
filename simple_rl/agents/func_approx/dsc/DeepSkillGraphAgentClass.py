@@ -499,7 +499,7 @@ class DeepSkillGraphAgent(object):
         for _, chain in self.dsc_agent.chain_set.items():
             done = False
             for option in chain.options:
-                if sum([(1 if s else 0) for s in option.success_curve[-5:]]) <= 2:
+                if len(option.success_curve) > 5 and sum([(1 if s else 0) for s in option.success_curve[-5:]]) <= 2:
                     chains_to_remove.append(chain)
                     break
 
@@ -529,7 +529,7 @@ class DeepSkillGraphAgent(object):
                 if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
                     invalid_salients.append(node)
             elif node in self.planning_agent.plan_graph.option_nodes:
-                if sum([(1 if s else 0) for s in node.success_curve[-5:]]) <= 2:
+                if len(node.success_curve) > 5 and sum([(1 if s else 0) for s in node.success_curve[-5:]]) <= 2:
                     invalid_options.append(node)
                     break
 
