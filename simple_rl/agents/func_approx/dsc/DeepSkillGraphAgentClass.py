@@ -524,7 +524,12 @@ class DeepSkillGraphAgent(object):
                     invalid_salients.append(node)
 
         for node in options_to_remove + invalid_salients:
-            self.planning_agent.plan_graph.plan_graph.remove_node(node)
+            for node2 in self.planning_agent.plan_graph.plan_graph:
+                if str(node) == str(node2):
+                    try:
+                        self.planning_agent.plan_graph.plan_graph.remove_node(node2)
+                    except:
+                        print(f"Node {str(node)} not found in graph, but was an option in a removed chain")
         for node in invalid_salients:
             self.planning_agent.plan_graph.salient_nodes.remove(node)
         for node in options_to_remove:
