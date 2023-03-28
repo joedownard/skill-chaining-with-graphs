@@ -137,7 +137,7 @@ class PlanGraph(object):
             path += [node2]
             neighboring_nodes = self.get_outgoing_nodes(node2)
             additional_costs = [_get_path_cost(node2, node3) for node3 in neighboring_nodes]
-            path_cost += min(additional_costs)
+            path_cost += min(additional_costs) if len(additional_costs) > 0 else 0
 
         return path, path_cost
 

@@ -495,10 +495,6 @@ class DeepSkillGraphAgent(object):
         return success_num / total_runs
 
     def cull_low_success_rate_options(self):
-        self.cull_low_success_rate_options_chainer()
-        self.cull_low_success_rate_options_planner()
-
-    def cull_low_success_rate_options_chainer(self):
         chains_to_remove = []
         for _, chain in self.dsc_agent.chain_set.items():
             done = False
@@ -521,30 +517,21 @@ class DeepSkillGraphAgent(object):
             if option in self.dsc_agent.mature_options:
                 self.dsc_agent.mature_options.remove(option)
 
-        wandb.log({"low_success_rate_culled_options_from_chains": len(options_to_remove)})
-        wandb.log({"low_success_rate_culled_chains": len(chains_to_remove)})
-
-    def cull_low_success_rate_options_planner(self):
-        invalid_options = []
         invalid_salients = []
-
         for node in self.planning_agent.plan_graph.plan_graph.nodes:
             if node in self.planning_agent.plan_graph.salient_nodes:
                 if self.mdp.env.env.wrapped_env._is_in_collision(node.get_target_position()):
                     invalid_salients.append(node)
-            elif node in self.planning_agent.plan_graph.option_nodes:
-                if len(node.success_curve) > 5 and sum([(1 if s else 0) for s in node.success_curve[-5:]]) <= 2:
-                    invalid_options.append(node)
 
-
-        for node in invalid_options + invalid_salients:
+        for node in options_to_remove + invalid_salients:
             self.planning_agent.plan_graph.plan_graph.remove_node(node)
         for node in invalid_salients:
             self.planning_agent.plan_graph.salient_nodes.remove(node)
-        for node in invalid_options:
+        for node in options_to_remove:
             self.planning_agent.plan_graph.option_nodes.remove(node)
 
-        wandb.log({"low_success_rate_culled_nodes_from_graph": len(invalid_options + invalid_salients)})
+        wandb.log({"low_success_rate_culled_options_from_chains": len(options_to_remove)})
+        wandb.log({"low_success_rate_culled_chains": len(chains_to_remove)})
 
     def cull_invalid_states(self):
         self.cull_invalid_states_planner()
