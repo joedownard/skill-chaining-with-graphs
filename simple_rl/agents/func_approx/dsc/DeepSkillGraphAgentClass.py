@@ -524,26 +524,26 @@ class DeepSkillGraphAgent(object):
                     invalid_salients.append(node)
 
         nodes_removed_from_graph = 0
+        options_to_remove_2 = []
         for node in options_to_remove + invalid_salients:
             for node2 in self.planning_agent.plan_graph.plan_graph:
                 if str(node) == str(node2):
-                    try:
-                        self.planning_agent.plan_graph.plan_graph.remove_node(node2)
-                        nodes_removed_from_graph += 1
-                    except:
-                        print(f"Node {str(node)} not found in graph, but was an option in a removed chain")
+                    options_to_remove_2.append(node2)
+
         for node in invalid_salients:
             self.planning_agent.plan_graph.salient_nodes.remove(node)
-        for node in options_to_remove:
-            for node2 in self.planning_agent.plan_graph.option_nodes:
-                if str(node) == str(node2):
-                    try:
-                        self.planning_agent.plan_graph.option_nodes.remove(node)
-                    except:
-                        print(f"Node {str(node)} not found in options list, but was an option in a removed chain")
+
+        for option in options_to_remove_2:
+            try:
+                self.planning_agent.plan_graph.plan_graph.remove_node(node2)
+                self.planning_agent.plan_graph.option_nodes.remove(node)
+                nodes_removed_from_graph += 1
+            except:
+                print(f"Node {str(node)} not found in graph/list, but was an option in a removed chain")
 
         wandb.log({"low_success_rate_culled_options_from_chains": len(options_to_remove)})
         wandb.log({"low_success_rate_culled_chains": len(chains_to_remove)})
+        wandb.log({"low_success_rate_culled_options_from_graph": nodes_removed_from_graph})
 
     def cull_invalid_states(self):
         self.cull_invalid_states_planner()
