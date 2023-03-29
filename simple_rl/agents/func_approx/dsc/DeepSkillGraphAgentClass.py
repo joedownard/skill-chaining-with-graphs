@@ -535,8 +535,8 @@ class DeepSkillGraphAgent(object):
 
         for option in options_to_remove_2:
             try:
-                self.planning_agent.plan_graph.plan_graph.remove_node(node2)
-                self.planning_agent.plan_graph.option_nodes.remove(node)
+                self.planning_agent.plan_graph.plan_graph.remove_node(option)
+                self.planning_agent.plan_graph.option_nodes.remove(option)
                 nodes_removed_from_graph += 1
             except:
                 print(f"Node {str(node)} not found in graph/list, but was an option in a removed chain")
