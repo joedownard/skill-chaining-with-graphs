@@ -14,7 +14,7 @@ from simple_rl.agents.func_approx.dsc.utils import *
 from simple_rl.mdp import MDP, State
 from simple_rl.mdp.GoalDirectedMDPClass import GoalDirectedMDP
 from simple_rl.agents.func_approx.dsc.utils import visualize_chain_graph, visualize_graph
-
+import math
 
 class DeepSkillGraphAgent(object):
     def __init__(self, mdp, dsc_agent, planning_agent, salient_event_freq,
@@ -459,9 +459,38 @@ class DeepSkillGraphAgent(object):
         wandb.log({title: wandb.Image(f"value_function_plots/{self.experiment_name}/{title}_episode_{num}.png")})
 
 
-    def run_test(self, num, pairs=100, trials=5, cull_naturally=False):
-        num_start_end_tests = pairs
-        start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
+    def standardised_grid_of_start_end_pairs (self):
+        grid = []
+        min_x = -6
+        max_x = 6
+
+        min_y = -2
+        max_y = 10
+        density = 10
+
+        x_inc = (max_x - min_x) / density
+        y_inx = (max_y - min_y) / density
+
+        for i in range(1, density-1):
+            for j in range(1, density-1):
+                trial = [max_x - (x_inc*j), max_y - (y_inc*i)]
+                rejected = self.env.env.wrapped_env._is_in_collision(trial)
+                if not rejected:
+                    grid.append(trial)
+
+        pairs = []
+        for i in range(math.floor(len(grid)/2)):
+            pos1 = grid[i]
+            pos2 = grid[i + math.floor(len(grid)/2)]
+            pairs.append((pos1, pos2))
+            pairs.append((pos2, pos1))
+
+        return pairs
+
+    def run_test(self, num, pairs=100, trials=5, cull_naturally=False, start_end_states=None):
+        if start_end_pairs == None:
+            num_start_end_tests = pairs
+            start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
         total_runs = 0
 
@@ -698,7 +727,8 @@ if __name__ == "__main__":
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
         visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
-        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True)
+        start_end_states = standardised_grid_of_start_end_pairs()
+        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True, start_end_states=start_end_states)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         # dsg_agent.cull_invalid_states()
@@ -710,10 +740,10 @@ if __name__ == "__main__":
 
         wandb.log({"environment": args.switch_to_env})
         
-        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True)
+        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True, start_end_states=start_end_states)
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
-        success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats)
+        success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
 
         print("Success Rate on initial env post training: ", success_pre_env_switch)
         print("Success Rate on new env post switch: ", success_post_env_switch)
