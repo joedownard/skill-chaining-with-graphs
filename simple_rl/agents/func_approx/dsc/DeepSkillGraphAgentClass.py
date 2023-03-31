@@ -469,7 +469,7 @@ class DeepSkillGraphAgent(object):
         density = 10
 
         x_inc = (max_x - min_x) / density
-        y_inx = (max_y - min_y) / density
+        y_inc = (max_y - min_y) / density
 
         for i in range(1, density-1):
             for j in range(1, density-1):
