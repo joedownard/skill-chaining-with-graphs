@@ -488,7 +488,7 @@ class DeepSkillGraphAgent(object):
         return pairs
 
     def run_test(self, num, pairs=100, trials=5, cull_naturally=False, start_end_states=None):
-        if start_end_pairs == None:
+        if start_end_states == None:
             num_start_end_tests = pairs
             start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
         success_num = 0
