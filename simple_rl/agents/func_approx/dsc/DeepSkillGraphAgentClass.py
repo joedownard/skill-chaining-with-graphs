@@ -473,7 +473,7 @@ class DeepSkillGraphAgent(object):
 
         for i in range(1, density-1):
             for j in range(1, density-1):
-                trial = [max_x - (x_inc*j), max_y - (y_inc*i)]
+                trial = np.array([max_x - (x_inc*j), max_y - (y_inc*i)])
                 rejected = self.mdp.env.wrapped_env._is_in_collision(trial)
                 if not rejected:
                     grid.append(trial)
