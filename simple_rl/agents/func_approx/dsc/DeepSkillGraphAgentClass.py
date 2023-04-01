@@ -471,8 +471,8 @@ class DeepSkillGraphAgent(object):
         x_inc = (max_x - min_x) / density
         y_inc = (max_y - min_y) / density
 
-        for i in range(1, density-1):
-            for j in range(1, density-1):
+        for i in range(1, density):
+            for j in range(1, density):
                 trial = np.array([max_x - (x_inc*j), max_y - (y_inc*i)])
                 rejected = self.mdp.env.wrapped_env._is_in_collision(trial)
                 if not rejected:
@@ -482,6 +482,13 @@ class DeepSkillGraphAgent(object):
         for i in range(math.floor(len(grid)/2)):
             pos1 = grid[i]
             pos2 = grid[i + math.floor(len(grid)/2)]
+            pairs.append((pos1, pos2))
+            pairs.append((pos2, pos1))
+
+        if len(grid) % 2 == 1:
+            i = math.floor(len(grid)/2)
+            pos1 = grid[i]
+            pos2 = grid[len(grid)-1]
             pairs.append((pos1, pos2))
             pairs.append((pos2, pos1))
 
@@ -518,8 +525,8 @@ class DeepSkillGraphAgent(object):
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
 
         image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
-        self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "option_start_success_map", image, num)
-        self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "option_end_success_map", image, num)
+        self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "start_success_map", image, num)
+        self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "end_success_map", image, num)
 
         return success_num / total_runs
 
@@ -528,7 +535,7 @@ class DeepSkillGraphAgent(object):
         for _, chain in self.dsc_agent.chain_set.items():
             done = False
             for option in chain.options:
-                if len(option.success_curve) > 5 and sum([(1 if s else 0) for s in option.success_curve[-5:]]) <= 2:
+                if len(option.success_curve) > 10 and sum([(1 if s else 0) for s in option.success_curve[-10:]]) <= 2:
                     chains_to_remove.append(chain)
                     break
 
