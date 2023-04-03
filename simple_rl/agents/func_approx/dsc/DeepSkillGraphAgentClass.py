@@ -675,6 +675,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_pairs", type=int, default=100)
     parser.add_argument("--test_repeats", type=int, default=5)
     parser.add_argument("--cull_naturally", type="store_true", default=False)
+    parser.add_argument("--cull_externally", type="store_true", default=False)
     args = parser.parse_args()
 
     wandb.init(
@@ -739,7 +740,9 @@ if __name__ == "__main__":
         success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
-        # dsg_agent.cull_invalid_states()
+
+        if args.cull_externally:
+            dsg_agent.cull_invalid_states()
 
         image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
