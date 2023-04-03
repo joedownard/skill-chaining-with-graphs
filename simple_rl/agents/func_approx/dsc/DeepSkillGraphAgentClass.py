@@ -674,6 +674,7 @@ if __name__ == "__main__":
     parser.add_argument("--switch_after", type=int, default=500)
     parser.add_argument("--test_pairs", type=int, default=100)
     parser.add_argument("--test_repeats", type=int, default=5)
+    parser.add_argument("--cull_naturally", type="store_true", default=False)
     args = parser.parse_args()
 
     wandb.init(
@@ -735,7 +736,7 @@ if __name__ == "__main__":
         visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
         start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
-        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True, start_end_states=start_end_states)
+        success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
         # dsg_agent.cull_invalid_states()
@@ -747,7 +748,7 @@ if __name__ == "__main__":
 
         wandb.log({"environment": args.switch_to_env})
         
-        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=True, start_end_states=start_end_states)
+        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=args.cull_naturally, start_end_states=start_end_states)
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
         success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
