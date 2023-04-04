@@ -753,10 +753,10 @@ if __name__ == "__main__":
 
         wandb.log({"environment": args.switch_to_env})
         
-        success_post_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, cull_naturally=args.cull_naturally, start_end_states=start_end_states)
+        success_post_env_switch = dsg_agent.run_test(2, args.test_pairs, args.test_repeats, cull_naturally=args.cull_naturally, start_end_states=start_end_states)
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_second_batch, num_steps=args.steps, starting_episode=eps_first_batch)
-        success_post_new_env_training = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
+        success_post_new_env_training = dsg_agent.run_test(3, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
 
         print("Success Rate on initial env post training: ", success_pre_env_switch)
         print("Success Rate on new env post switch: ", success_post_env_switch)
