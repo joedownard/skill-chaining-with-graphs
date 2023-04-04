@@ -674,8 +674,8 @@ if __name__ == "__main__":
     parser.add_argument("--switch_after", type=int, default=500)
     parser.add_argument("--test_pairs", type=int, default=100)
     parser.add_argument("--test_repeats", type=int, default=5)
-    parser.add_argument("--cull_naturally", type="store_true", default=False)
-    parser.add_argument("--cull_externally", type="store_true", default=False)
+    parser.add_argument("--cull_naturally", action="store_true", default=False)
+    parser.add_argument("--cull_externally", action="store_true", default=False)
     args = parser.parse_args()
 
     wandb.init(
