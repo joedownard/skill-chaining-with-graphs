@@ -741,6 +741,8 @@ if __name__ == "__main__":
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
 
+        start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
+
         if args.cull_externally:
             dsg_agent.cull_invalid_states()
 
