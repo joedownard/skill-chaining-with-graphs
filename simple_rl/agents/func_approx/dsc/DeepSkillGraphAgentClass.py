@@ -189,7 +189,7 @@ class DeepSkillGraphAgent(object):
             if episode > 0 and episode % 25 == 0:
                 print("plotting success rates")
 
-                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_leftmiddle"
                 visualize_chain_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
                 visualize_graph(self.planning_agent, episode, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
 
@@ -495,6 +495,10 @@ class DeepSkillGraphAgent(object):
         return pairs
 
     def run_test(self, num, pairs=100, trials=5, cull_naturally=False, start_end_states=None):
+        using_grid = False
+        if start_end_states != None:
+            using_grid = True
+
         if start_end_states == None:
             num_start_end_tests = pairs
             start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
@@ -506,7 +510,7 @@ class DeepSkillGraphAgent(object):
         for (start, end) in start_end_states:
             if total_runs % 20 == 0 and cull_naturally:
                 self.cull_low_success_rate_options()
-                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+                image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_leftmiddle"
                 visualize_chain_graph(self.planning_agent, 1, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
                 visualize_graph(self.planning_agent, 1, self.experiment_name, self.dsc_agent.seed, background_img_fname=image)
             
@@ -524,7 +528,15 @@ class DeepSkillGraphAgent(object):
             wandb.log({"test_pair_success_rate": pair_success_num / len(successes)})
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
 
-        image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        if using_grid:
+            temp = []
+            i = 0
+            while i < len(start_end_success_rate):
+                new_avg = avg(start_end_success_rate[i][2] + start_end_success_rate[i+1][2])
+                temp.append([start_end_success_rate[i][0], start_end_success_rate[i][1], new_avg])
+                i += 2
+
+        image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_leftmiddle"
         self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "start_success_map", image, num)
         self.visualize_option_successes([(s[1], s[2]) for s in start_end_success_rate], "end_success_map", image, num)
 
@@ -746,7 +758,7 @@ if __name__ == "__main__":
         if args.cull_externally:
             dsg_agent.cull_invalid_states()
 
-        image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_rightmiddle"
+        image = "ant_maze_middle" if dsg_agent.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_leftmiddle"
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
         visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
