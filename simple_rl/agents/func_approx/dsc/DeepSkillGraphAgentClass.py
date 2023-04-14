@@ -688,6 +688,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_repeats", type=int, default=5)
     parser.add_argument("--cull_naturally", action="store_true", default=False)
     parser.add_argument("--cull_externally", action="store_true", default=False)
+    parser.add_argument("--use_grid", action="store_true", default=False)
     args = parser.parse_args()
 
     wandb.init(
@@ -748,12 +749,16 @@ if __name__ == "__main__":
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
         visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
-        start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
+        start_end_states = None
+        if args.use_grid:
+            start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
         success_pre_env_switch = dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states)
 
         dsg_agent.mdp.switch_environment(args.switch_to_env)
 
-        start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
+        start_end_states = None
+        if args.use_grid:
+            start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
 
         if args.cull_externally:
             dsg_agent.cull_invalid_states()
