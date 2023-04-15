@@ -15,6 +15,7 @@ from simple_rl.mdp import MDP, State
 from simple_rl.mdp.GoalDirectedMDPClass import GoalDirectedMDP
 from simple_rl.agents.func_approx.dsc.utils import visualize_chain_graph, visualize_graph
 import math
+from statistics import mean
 
 class DeepSkillGraphAgent(object):
     def __init__(self, mdp, dsc_agent, planning_agent, salient_event_freq,
@@ -495,10 +496,6 @@ class DeepSkillGraphAgent(object):
         return pairs
 
     def run_test(self, num, pairs=100, trials=5, cull_naturally=False, start_end_states=None):
-        using_grid = False
-        if start_end_states != None:
-            using_grid = True
-
         if start_end_states == None:
             num_start_end_tests = pairs
             start_end_states = [(self.mdp.sample_random_state()[:2], self.mdp.sample_random_state()[:2]) for _ in range(num_start_end_tests)]
@@ -527,14 +524,6 @@ class DeepSkillGraphAgent(object):
 
             wandb.log({"test_pair_success_rate": pair_success_num / len(successes)})
         wandb.log({"test_cycle_success_rate": success_num / total_runs})
-
-        if using_grid:
-            temp = []
-            i = 0
-            while i < len(start_end_success_rate):
-                new_avg = avg(start_end_success_rate[i][2] + start_end_success_rate[i+1][2])
-                temp.append([start_end_success_rate[i][0], start_end_success_rate[i][1], new_avg])
-                i += 2
 
         image = "ant_maze_middle" if self.mdp.env_name == "antmaze-dynamic-middle-wall" else "ant_maze_leftmiddle"
         self.visualize_option_successes([(s[0], s[2]) for s in start_end_success_rate], "start_success_map", image, num)
@@ -738,14 +727,17 @@ if __name__ == "__main__":
 
     if not args.enable_switch_env:
         num_successes = dsg_agent.dsg_run_loop(episodes=args.episodes, num_steps=args.steps)
-        print("Success Rate: ", dsg_agent.run_test(1))
+        start_end_states = None
+        if args.use_grid:
+            start_end_states = dsg_agent.standardised_grid_of_start_end_pairs()
+        print("Success Rate: ", dsg_agent.run_test(1, args.test_pairs, args.test_repeats, start_end_states=start_end_states))
     else:
         eps_first_batch = args.switch_after
         eps_second_batch = args.episodes - args.switch_after
 
         num_successes = dsg_agent.dsg_run_loop(episodes=eps_first_batch, num_steps=args.steps)
 
-        image = "ant_maze_rightmiddle"
+        image = "ant_maze_leftmiddle"
         visualize_chain_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
         visualize_graph(planner, eps_first_batch, dsg_agent.experiment_name, chainer.seed, background_img_fname=image)
 
