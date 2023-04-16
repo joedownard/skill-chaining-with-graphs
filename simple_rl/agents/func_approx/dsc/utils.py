@@ -612,8 +612,11 @@ def visualize_chain_graph(planner, episode, experiment_name, seed, background_im
         for neighbour in planner.plan_graph.plan_graph.neighbors(node):
             if not isinstance(neighbour, (ModelBasedOption, Option)):
                 continue
-            neighbour_init_x, neighbour_init_y, _, _ = _get_start_end_point(neighbour)
-            _plot_option_to_option(term_x, term_y, neighbour_init_x, neighbour_init_y)
+            try:
+                neighbour_init_x, neighbour_init_y, _, _ = _get_start_end_point(neighbour)
+                _plot_option_to_option(term_x, term_y, neighbour_init_x, neighbour_init_y)
+            except:
+                print("skipping option as failed to plot")
 
 
     plt.xticks([])
